@@ -25,6 +25,7 @@ if(DEFINED VCPKG_PLATFORM_TOOLSET)
 	set(VCPKG_PLATFORM_TOOLSET "${VCPKG_PLATFORM_TOOLSET}" CACHE STRING "vcpkg platform toolset")
 endif()
 
+option(OTCLIENT_BUILD_CLIENT "Build client executable" ON)
 option(OTCLIENT_BUILD_TESTS "Build unit tests" OFF)
 set(VCPKG_MANIFEST_FEATURES "${VCPKG_MANIFEST_FEATURES}" CACHE STRING "vcpkg manifest features")
 

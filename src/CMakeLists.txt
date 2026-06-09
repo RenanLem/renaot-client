@@ -55,6 +55,13 @@ else()
   add_executable(${PROJECT_NAME} "")
 endif()
 
+if(NOT OTCLIENT_BUILD_CLIENT)
+  set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL ON)
+  if(MSVC)
+    set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD ON)
+  endif()
+endif()
+
 # *****************************************************************************
 # Options Code
 # *****************************************************************************
