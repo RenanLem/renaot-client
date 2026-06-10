@@ -6483,21 +6483,28 @@ void ProtocolGame::parseHighscores(const InputMessagePtr& msg)
 
 void ProtocolGame::parseWeaponProficiencyExperience(const InputMessagePtr& msg)
 {
-    msg->getU16(); // itemId
-    msg->getU32(); // Experience
-    msg->getU8(); // 1
+    const uint16_t itemId = msg->getU16();
+    const uint32_t experience = msg->getU32();
+    msg->getU8(); // reserved (always 1 in current protocol)
+    g_lua.callGlobalField("g_game", "onParseWeaponProficiencyExperience", itemId, experience);
 }
 
 void ProtocolGame::parseWeaponProficiencyInfo(const InputMessagePtr& msg)
 {
-    msg->getU16(); // itemId
-    msg->getU32(); // experience
+    const uint16_t itemId = msg->getU16();
+    const uint32_t experience = msg->getU32();
 
     const uint8_t size = msg->getU8();
-    for (auto j = 0; j < size; ++j) {
-        msg->getU8(); // proficiencyLevel
-        msg->getU8(); // perkPosition
+    // Pack (level, slot) into uint16: high byte = level, low byte = slot.
+    // Lua decodes via bit.band / bit.rshift. std::pair is not natively cast to lua_value.
+    std::vector<uint16_t> perks;
+    perks.reserve(size);
+    for (uint8_t j = 0; j < size; ++j) {
+        const uint8_t proficiencyLevel = msg->getU8();
+        const uint8_t perkPosition = msg->getU8();
+        perks.push_back(static_cast<uint16_t>((proficiencyLevel << 8) | perkPosition));
     }
+    g_lua.callGlobalField("g_game", "onParseWeaponProficiencyInfo", itemId, experience, perks);
 }
 
 // 0x5F - parse destiny wheel window

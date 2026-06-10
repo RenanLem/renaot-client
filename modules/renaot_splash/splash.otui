@@ -1,0 +1,10 @@
+SplashOverlay < UIWidget
+  background-color: #000000ff
+  focusable: false
+
+  UIWidget
+    id: logo
+    size: 512 512
+    anchors.centerIn: parent
+    image-source: /images/renaot_logo
+    image-smooth: true

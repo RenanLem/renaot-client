@@ -1,0 +1,26 @@
+QuickLootPanel < MiniWindow
+  id: quickLootPanel
+  height: 70
+  text: Quick Loot
+  draggable: true
+  &save: true
+
+  MiniWindowContents
+    padding: 4 4 4 4
+    layout:
+      type: verticalBox
+      spacing: 4
+
+    UIWidget
+      id: info
+      height: 16
+      text: Auto-opens nearby corpses
+      text-align: center
+      color: #b0b0b0ff
+      font: verdana-11px-rounded
+
+    Button
+      id: toggle
+      height: 24
+      text: QUICK-LOOT: OFF
+      color: #ff7070ff

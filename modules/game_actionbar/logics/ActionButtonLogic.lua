@@ -318,6 +318,42 @@ function onExecuteAction(button, isPress)
         g_game.equipItemId(button.cache.itemId, tier)
     end
 
+    if action == UseTypes["Equipments"] then
+        local items = button.cache.equipmentsSet or {}
+        local hasTierFeature = g_game.getFeature(GameThingUpgradeClassification)
+        local delay = 0
+        for _, entry in ipairs(items) do
+            if entry.itemId and entry.itemId > 0 then
+                local tier = entry.tier or 0
+                local equipTier = (hasTierFeature and tier > 0) and tier or 0
+
+                local alreadyEquipped = false
+                if entry.inventorySlot and player then
+                    local current = player:getInventoryItem(entry.inventorySlot)
+                    if current and current:getId() == entry.itemId then
+                        local currentTier = current.getTier and current:getTier() or 0
+                        if not hasTierFeature or currentTier == equipTier then
+                            alreadyEquipped = true
+                        end
+                    end
+                end
+
+                if not alreadyEquipped then
+                    local itemId, itemTier = entry.itemId, equipTier
+                    if delay == 0 then
+                        g_game.equipItemId(itemId, itemTier)
+                    else
+                        scheduleEvent(function()
+                            g_game.equipItemId(itemId, itemTier)
+                        end, delay)
+                    end
+                    delay = delay + 250
+                end
+            end
+        end
+        return
+    end
+
     if action == UseTypes["Use"] and button.item then
         if (button.item:getItem():isContainer()) then
             g_game.closeContainerByItemId(button.item:getItemId())
@@ -578,6 +614,10 @@ function resetButtonCache(button)
     c.buttonIndex = 0
     c.buttonParent = nil
     c.itemId = 0
+    c.equipmentsSet = nil
+    c.equipmentsIcon = nil
+    c.equipmentsIconTier = nil
+    c.equipmentsName = nil
 end
 
 -- /*=============================================
@@ -617,6 +657,18 @@ function setupButtonTooltip(button, isEmpty)
         actionDesc = specialAction and specialAction.text or "Unknown action"
     elseif cache.actionType == UseTypes["passiveAbility"] then
         actionDesc = "Gift of Life"
+    elseif cache.actionType == UseTypes["Equipments"] then
+        local items = cache.equipmentsSet or {}
+        local setName = cache.equipmentsName or ''
+        actionDesc = "Equip set"
+        if #setName > 0 then
+            actionDesc = actionDesc .. ": " .. setName
+        end
+        for _, entry in ipairs(items) do
+            if entry.itemId and entry.itemId > 0 then
+                actionDesc = actionDesc .. "\n    " .. (entry.slotId or '?') .. ": " .. getItemNameById(entry.itemId)
+            end
+        end
     else
         actionDesc = UseTypesTip[cache.actionType]
         if actionDesc == nil then
@@ -787,6 +839,10 @@ function configureButtonMouseRelease(button)
             end)
             menu:addOption(button.cache.hotkey and tr('Edit Hotkey') or tr('Assign Hotkey'), function()
                 assignHotkey(button)
+            end)
+            menu:addOption(button.cache.actionType == UseTypes["Equipments"]
+                and tr('Edit Equipments') or tr('Assign Equipments'), function()
+                assignEquipments(button)
             end)
             if button.cache.actionType > 0 then
                 menu:addSeparator()
@@ -967,6 +1023,35 @@ function updateButton(button)
         button.item:setOn(true)
         button.cache.specialAction = specialAction
         button.cache.actionType = UseTypes["specialAction"]
+    end
+
+    local equipmentsSet = buttonData["actionsetting"]["equipmentsSet"]
+    if equipmentsSet then
+        local iconId = buttonData["actionsetting"]["equipmentsIcon"] or 0
+        local iconTier = buttonData["actionsetting"]["equipmentsIconTier"] or 0
+        local setName = buttonData["actionsetting"]["equipmentsName"] or ''
+
+        -- Fall back to first set item if no explicit icon chosen.
+        if iconId == 0 and equipmentsSet[1] and equipmentsSet[1].itemId then
+            iconId = equipmentsSet[1].itemId
+            iconTier = equipmentsSet[1].tier or 0
+        end
+
+        if iconId > 0 then
+            button.item:setItemId(iconId, true)
+            ItemsDatabase.setTier(button.item, iconTier)
+        end
+        button.item:setOn(true)
+        if #setName > 0 then
+            button.parameterText:setText(short_text(setName, 8))
+        end
+        button.cache.equipmentsSet = equipmentsSet
+        button.cache.equipmentsIcon = iconId
+        button.cache.equipmentsIconTier = iconTier
+        button.cache.equipmentsName = setName
+        button.cache.itemId = iconId
+        button.cache.upgradeTier = iconTier
+        button.cache.actionType = UseTypes["Equipments"]
     end
 
     button.item:setDraggable(true)

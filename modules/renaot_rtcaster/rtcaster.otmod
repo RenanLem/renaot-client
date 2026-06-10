@@ -1,0 +1,11 @@
+Module
+  name: renaot_rtcaster
+  description: RTCaster — Spell Shooter Helper with presets, auto-target, hotkeys
+  author: RenaOT
+  sandboxed: true
+  autoload: true
+  autoload-priority: 1500
+  scripts: [ rtcaster ]
+  dependencies: [ game_interface ]
+  @onLoad: init()
+  @onUnload: terminate()

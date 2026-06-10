@@ -1,0 +1,199 @@
+EquipmentEditorSlot < UIItem
+  size: 34 34
+  image-source: /images/inventory/containerslot
+  image-border: 3
+  phantom: false
+  virtual: true
+  draggable: false
+
+  UIWidget
+    id: placeholder
+    image-source: /images/inventory/inventory_head
+    anchors.centerIn: parent
+    phantom: true
+    size: 32 32
+    opacity: 0.35
+
+EquipmentsEditorWindow < MainWindow
+  id: equipmentsEditorWindow
+  !text: tr('Assign Equipments')
+  size: 340 380
+
+  Label
+    id: nameLabel
+    !text: tr('Set name:')
+    anchors.top: parent.top
+    anchors.left: parent.left
+    margin-top: 4
+    width: 60
+    height: 18
+    color: #c0c0c0ff
+
+  TextEdit
+    id: setName
+    anchors.verticalCenter: nameLabel.verticalCenter
+    anchors.left: nameLabel.right
+    anchors.right: parent.right
+    margin-left: 6
+    height: 20
+    max-length: 24
+
+  Label
+    id: iconLabel
+    !text: tr('Icon:')
+    anchors.top: nameLabel.bottom
+    anchors.left: parent.left
+    margin-top: 12
+    width: 60
+    height: 18
+    color: #c0c0c0ff
+
+  EquipmentEditorSlot
+    id: iconSlot
+    !tooltip: tr('Left-click: pick from inventory.\nRight-click: clear.\nThis is only the button icon — it does NOT equip.')
+    anchors.verticalCenter: iconLabel.verticalCenter
+    anchors.left: iconLabel.right
+    margin-left: 6
+
+  Label
+    id: iconHint
+    !text: tr('(visual only)')
+    anchors.verticalCenter: iconSlot.verticalCenter
+    anchors.left: iconSlot.right
+    anchors.right: parent.right
+    margin-left: 8
+    color: #707070ff
+    text-align: left
+
+  HorizontalSeparator
+    id: topSep
+    anchors.top: iconSlot.bottom
+    margin-top: 10
+    anchors.left: parent.left
+    anchors.right: parent.right
+
+  Label
+    id: slotsHint
+    !text: tr('Click a slot to assign an item — or use Copy Worn.')
+    anchors.top: topSep.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 6
+    color: #909090ff
+    text-align: center
+    height: 14
+
+  // ---------- inventory layout (3 columns, 4 rows) ----------
+  // Column 1: amulet, sword, ring
+  // Column 2: helmet, armor, legs, boots
+  // Column 3: backpack, shield, ammo
+  Panel
+    id: gridPanel
+    anchors.top: slotsHint.bottom
+    margin-top: 8
+    anchors.horizontalCenter: parent.horizontalCenter
+    width: 122
+    height: 156
+
+    EquipmentEditorSlot
+      id: helmet
+      anchors.top: parent.top
+      anchors.horizontalCenter: parent.horizontalCenter
+
+    EquipmentEditorSlot
+      id: amulet
+      anchors.top: helmet.top
+      anchors.right: helmet.left
+      margin-right: 4
+
+    EquipmentEditorSlot
+      id: backpack
+      anchors.top: helmet.top
+      anchors.left: helmet.right
+      margin-left: 4
+
+    EquipmentEditorSlot
+      id: armor
+      anchors.top: helmet.bottom
+      anchors.horizontalCenter: parent.horizontalCenter
+      margin-top: 4
+
+    EquipmentEditorSlot
+      id: sword
+      anchors.top: armor.top
+      anchors.right: armor.left
+      margin-right: 4
+
+    EquipmentEditorSlot
+      id: shield
+      anchors.top: armor.top
+      anchors.left: armor.right
+      margin-left: 4
+
+    EquipmentEditorSlot
+      id: legs
+      anchors.top: armor.bottom
+      anchors.horizontalCenter: parent.horizontalCenter
+      margin-top: 4
+
+    EquipmentEditorSlot
+      id: ring
+      anchors.top: legs.top
+      anchors.right: legs.left
+      margin-right: 4
+
+    EquipmentEditorSlot
+      id: ammo
+      anchors.top: legs.top
+      anchors.left: legs.right
+      margin-left: 4
+
+    EquipmentEditorSlot
+      id: boots
+      anchors.top: legs.bottom
+      anchors.horizontalCenter: parent.horizontalCenter
+      margin-top: 4
+
+  HorizontalSeparator
+    id: bottomSep
+    anchors.bottom: buttonClose.top
+    margin-bottom: 6
+    anchors.left: parent.left
+    anchors.right: parent.right
+
+  Button
+    id: buttonCopy
+    !text: tr('Copy Worn')
+    !tooltip: tr('Copy the items currently worn by your character')
+    width: 80
+    height: 22
+    anchors.bottom: parent.bottom
+    anchors.left: parent.left
+
+  Button
+    id: buttonClear
+    !text: tr('Clear')
+    width: 70
+    height: 22
+    anchors.bottom: parent.bottom
+    anchors.left: buttonCopy.right
+    margin-left: 4
+
+  Button
+    id: buttonApply
+    !text: tr('Apply')
+    width: 60
+    height: 22
+    anchors.bottom: parent.bottom
+    anchors.right: buttonClose.left
+    margin-right: 4
+
+  Button
+    id: buttonClose
+    !text: tr('Close')
+    width: 60
+    height: 22
+    anchors.bottom: parent.bottom
+    anchors.right: parent.right
+
+EquipmentsEditorWindow

@@ -581,6 +581,235 @@ function assignSpecialAction(button, mousePos)
 end
 
 -- /*=============================================
+-- =            Equipments editor             =
+-- =============================================*/
+
+local equipmentsEditorWindow = nil
+
+local function equipmentsPickItem(callback)
+    -- Reuse the mouse-grab/target-cursor flow from assignItemEvent so the user
+    -- can click any item in their inventory or an open container.
+    mouseGrabberWidget:grabMouse()
+    if modules.client_options and modules.client_options.getOption('nativeCursor') then
+        g_window.setSystemCursor('cross')
+    else
+        g_mouse.pushCursor('target')
+    end
+    mouseGrabberWidget.onMouseRelease = function(self, mousePosition, mouseButton)
+        self:ungrabMouse()
+        if modules.client_options and modules.client_options.getOption('nativeCursor') then
+            g_window.restoreMouseCursor()
+        else
+            g_mouse.popCursor('target')
+        end
+        mouseGrabberWidget.onMouseRelease = onDropActionButton
+
+        if mouseButton ~= MouseLeftButton then
+            return
+        end
+
+        local clickedWidget = gameRootPanel:recursiveGetChildByPos(mousePosition, false)
+        if not clickedWidget then
+            return
+        end
+        if clickedWidget:getClassName() ~= 'UIItem' or clickedWidget:isVirtual() or not clickedWidget:getItem() then
+            return
+        end
+        local pickedItem = clickedWidget:getItem()
+        callback(pickedItem:getId(), pickedItem:getTier())
+    end
+end
+
+local function updateEquipmentsSlotWidget(slotWidget, slotDef, itemId, itemTier)
+    local placeholder = slotWidget:getChildById('placeholder')
+    if itemId and itemId > 0 then
+        slotWidget:setItemId(itemId)
+        if slotWidget:getItem() and itemTier and itemTier > 0 then
+            ItemsDatabase.setTier(slotWidget, itemTier, false)
+        end
+        if placeholder then placeholder:setVisible(false) end
+    else
+        slotWidget:setItemId(0)
+        if placeholder then
+            placeholder:setImageSource(slotDef.icon)
+            placeholder:setVisible(true)
+        end
+    end
+end
+
+function assignEquipments(button)
+    local actionbar = button:getParent():getParent()
+    if actionbar.locked then
+        alert('Action bar is locked')
+        return
+    end
+
+    if equipmentsEditorWindow then
+        equipmentsEditorWindow:destroy()
+        equipmentsEditorWindow = nil
+    end
+
+    local ui = g_ui.displayUI('/game_actionbar/otui/equipments')
+    equipmentsEditorWindow = ui
+    ui:setTitle("Assign Equipments to Action Button " .. button:getId())
+    ui:raise()
+    ui:focus()
+    ui:centerIn('parent')
+
+    -- Local working state. We mutate this directly as user interacts; only on
+    -- Apply do we persist via ApiJson.createOrUpdateEquipments.
+    local slotData = {} -- [slotKey] = { itemId, tier }
+    local iconData = { itemId = 0, tier = 0 }
+
+    local function refreshSlot(slotDef)
+        local widget = ui:recursiveGetChildById(slotDef.id)
+        local data = slotData[slotDef.id]
+        updateEquipmentsSlotWidget(widget, slotDef, data and data.itemId or 0, data and data.tier or 0)
+    end
+
+    local function refreshIcon()
+        local widget = ui:recursiveGetChildById('iconSlot')
+        local fakeDef = { icon = "/images/inventory/inventory_torso" }
+        updateEquipmentsSlotWidget(widget, fakeDef, iconData.itemId, iconData.tier)
+    end
+
+    local function refreshAll()
+        for _, slotDef in ipairs(EquipmentSlotsList) do
+            refreshSlot(slotDef)
+        end
+        refreshIcon()
+    end
+
+    -- Pre-fill from existing assignment (edit case)
+    if button.cache and button.cache.actionType == UseTypes["Equipments"] then
+        local existing = button.cache.equipmentsSet or {}
+        for _, entry in ipairs(existing) do
+            if entry.slotId then
+                slotData[entry.slotId] = { itemId = entry.itemId or 0, tier = entry.tier or 0 }
+            end
+        end
+        iconData.itemId = button.cache.equipmentsIcon or 0
+        iconData.tier = button.cache.equipmentsIconTier or 0
+        ui:recursiveGetChildById('setName'):setText(button.cache.equipmentsName or '')
+    end
+
+    -- Wire each slot
+    for _, slotDef in ipairs(EquipmentSlotsList) do
+        local widget = ui:recursiveGetChildById(slotDef.id)
+        widget:setTooltip(slotDef.id)
+        widget.onMouseRelease = function(self, mousePos, mouseButton)
+            if mouseButton == MouseRightButton then
+                slotData[slotDef.id] = nil
+                refreshSlot(slotDef)
+                return true
+            elseif mouseButton == MouseLeftButton then
+                equipmentsPickItem(function(itemId, itemTier)
+                    slotData[slotDef.id] = { itemId = itemId, tier = itemTier or 0 }
+                    refreshSlot(slotDef)
+                    if iconData.itemId == 0 then
+                        iconData.itemId = itemId
+                        iconData.tier = itemTier or 0
+                        refreshIcon()
+                    end
+                end)
+                return true
+            end
+        end
+    end
+
+    -- Icon slot
+    local iconWidget = ui:recursiveGetChildById('iconSlot')
+    iconWidget.onMouseRelease = function(self, mousePos, mouseButton)
+        if mouseButton == MouseRightButton then
+            iconData.itemId = 0
+            iconData.tier = 0
+            refreshIcon()
+            return true
+        elseif mouseButton == MouseLeftButton then
+            equipmentsPickItem(function(itemId, itemTier)
+                iconData.itemId = itemId
+                iconData.tier = itemTier or 0
+                refreshIcon()
+            end)
+            return true
+        end
+    end
+
+    refreshAll()
+
+    -- Copy Worn: read current player inventory into slotData
+    ui:recursiveGetChildById('buttonCopy').onClick = function()
+        local localPlayer = g_game.getLocalPlayer()
+        if not localPlayer then return end
+        for _, slotDef in ipairs(EquipmentSlotsList) do
+            local item = localPlayer:getInventoryItem(slotDef.slot)
+            if item then
+                slotData[slotDef.id] = { itemId = item:getId(), tier = item:getTier() or 0 }
+            else
+                slotData[slotDef.id] = nil
+            end
+        end
+        -- Default icon to armor if not yet set
+        if iconData.itemId == 0 and slotData.armor then
+            iconData.itemId = slotData.armor.itemId
+            iconData.tier = slotData.armor.tier
+        end
+        refreshAll()
+    end
+
+    ui:recursiveGetChildById('buttonClear').onClick = function()
+        slotData = {}
+        iconData.itemId = 0
+        iconData.tier = 0
+        ui:recursiveGetChildById('setName'):setText('')
+        refreshAll()
+    end
+
+    local function applyAndPersist(closeAfter)
+        local items = {}
+        for _, slotDef in ipairs(EquipmentSlotsList) do
+            local data = slotData[slotDef.id]
+            if data and data.itemId and data.itemId > 0 then
+                table.insert(items, {
+                    slotId = slotDef.id,
+                    inventorySlot = slotDef.slot,
+                    itemId = data.itemId,
+                    tier = data.tier or 0
+                })
+            end
+        end
+        if #items == 0 then
+            alert("Add at least one item to an inventory slot before saving.\nThe icon is only visual — the body slots are what gets equipped.\nTip: use \"Copy Worn\" to grab everything you're wearing right now.")
+            return
+        end
+        local setName = ui:recursiveGetChildById('setName'):getText() or ''
+        local barID, buttonID = string.match(button:getId(), "(.*)%.(.*)")
+        ApiJson.createOrUpdateEquipments(tonumber(barID), tonumber(buttonID), items,
+            iconData.itemId, iconData.tier, setName)
+        ApiJson.saveData()
+        updateButton(button)
+        if closeAfter then
+            ui:destroy()
+            equipmentsEditorWindow = nil
+        end
+    end
+
+    ui:recursiveGetChildById('buttonApply').onClick = function()
+        applyAndPersist(true)
+    end
+
+    ui:recursiveGetChildById('buttonClose').onClick = function()
+        ui:destroy()
+        equipmentsEditorWindow = nil
+    end
+
+    ui.onEscape = function()
+        ui:destroy()
+        equipmentsEditorWindow = nil
+    end
+end
+
+-- /*=============================================
 -- =            item Event external          =
 -- =============================================*/
 function onDropActionButton(self, mousePosition, mouseButton)

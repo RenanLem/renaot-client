@@ -7,6 +7,8 @@ local storeAmount = 0
 local chaseModeRadioGroup
 local controlButton1400 = nil
 local optionPanel = nil
+local displayedButtonsList = nil
+local availableButtonsList = nil
 local buttonConfigs = {}
 local buttonOrder = {}
 local COLORS = {
@@ -176,6 +178,8 @@ function optionsController:onInit()
 
     if not optionPanel then
         optionPanel = g_ui.loadUI('option_control_buttons', modules.client_options:getPanel())
+        displayedButtonsList = optionPanel:recursiveGetChildById('displayedButtonsList')
+        availableButtonsList = optionPanel:recursiveGetChildById('displayedAvailableButtonsList')
         modules.client_options.addButton("Interface", "Control Buttons", optionPanel, function() initControlButtons() end)
     end
 end
@@ -192,6 +196,8 @@ function optionsController:onTerminate()
     if optionPanel then
         optionPanel:destroy()
         optionPanel = nil
+        displayedButtonsList = nil
+        availableButtonsList = nil
         modules.client_options.removeButton("Interface", "Control Buttons")  -- hot reload
     end
     if controlButton1400 then
@@ -417,15 +423,15 @@ local function updateList(listWidget, isVisibleList)
 end
 
 function updateDisplayedButtonsList()
-    updateList(optionPanel.panelDisplayedButtons.displayedButtonsList, true)
+    updateList(displayedButtonsList, true)
 end
 
 function updateAvailableButtonsList()
-    updateList(optionPanel.panelAvailableButtons.displayedAvailableButtonsList, false)
+    updateList(availableButtonsList, false)
 end
 
 function moveToAvailable()
-    local displayedList = optionPanel.panelDisplayedButtons.displayedButtonsList
+    local displayedList = displayedButtonsList
     local selectedItem = displayedList:getFocusedChild()
 
     if not selectedItem then
@@ -448,7 +454,7 @@ function moveToAvailable()
 end
 
 function moveToDisplayed()
-    local availableList = optionPanel.panelAvailableButtons.displayedAvailableButtonsList
+    local availableList = availableButtonsList
     local selectedItem = availableList:getFocusedChild()
 
     if not selectedItem then
@@ -477,7 +483,7 @@ function moveButtonUp()
         return
     end
 
-    local displayedList = optionPanel.panelDisplayedButtons.displayedButtonsList
+    local displayedList = displayedButtonsList
     local selectedItem = displayedList:getFocusedChild()
 
     if not selectedItem then
@@ -504,7 +510,7 @@ function moveButtonDown()
         return
     end
 
-    local displayedList = optionPanel.panelDisplayedButtons.displayedButtonsList
+    local displayedList = displayedButtonsList
     local selectedItem = displayedList:getFocusedChild()
 
     if not selectedItem then

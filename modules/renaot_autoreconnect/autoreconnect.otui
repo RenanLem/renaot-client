@@ -1,0 +1,10 @@
+ReconnectStatus < Label
+  background-color: #00000099
+  color: #ffd060ff
+  text-align: center
+  font: verdana-11px-rounded
+  padding: 4 8 4 8
+  size: 280 22
+  anchors.top: parent.top
+  anchors.horizontalCenter: parent.horizontalCenter
+  margin-top: 40

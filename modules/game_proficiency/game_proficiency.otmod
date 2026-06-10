@@ -1,0 +1,10 @@
+Module
+  name: game_proficiency
+  description: Weapon Proficiency window (XP per weapon category + perk tree)
+  sandboxed: true
+  autoload: true
+  autoload-priority: 1500
+  dependencies: [ game_mainpanel, game_inventory ]
+  scripts: [ game_proficiency ]
+  @onLoad: init()
+  @onUnload: terminate()

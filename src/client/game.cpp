@@ -1888,6 +1888,14 @@ void Game::closeImbuingWindow()
     m_protocolGame->sendCloseImbuingWindow();
 }
 
+void Game::weaponProficiencyAction(const uint8_t action, const uint16_t itemId, const uint8_t level, const uint8_t slot)
+{
+    if (!canPerformGameAction())
+        return;
+
+    m_protocolGame->sendWeaponProficiencyAction(action, itemId, level, slot);
+}
+
 void Game::imbuementDurations(const bool isOpen)
 {
     if (!canPerformGameAction())

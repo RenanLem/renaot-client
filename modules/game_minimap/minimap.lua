@@ -115,19 +115,23 @@ function mapController:onGameStart()
     -- Load Map
     g_minimap.clean()
 
-    local minimapFile = '/minimap'
-    local loadFnc = nil
-
     if otmm then
-        minimapFile = minimapFile .. '.otmm'
-        loadFnc = g_minimap.loadOtmm
-    else
-        minimapFile = minimapFile .. '_' .. g_game.getClientVersion() .. '.otcm'
-        loadFnc = g_map.loadOtcm
-    end
+        -- Load personal cache first so the global file (with authoritative colors
+        -- generated from the .otbm) overrides it on every login.
+        local personalMinimapFile = '/minimap.otmm'
+        if g_resources.fileExists(personalMinimapFile) then
+            g_minimap.loadOtmm(personalMinimapFile)
+        end
 
-    if g_resources.fileExists(minimapFile) then
-        loadFnc(minimapFile)
+        local globalMinimapFile = '/data/minimap.otmm'
+        if g_resources.fileExists(globalMinimapFile) then
+            g_minimap.loadOtmm(globalMinimapFile)
+        end
+    else
+        local minimapFile = '/minimap_' .. g_game.getClientVersion() .. '.otcm'
+        if g_resources.fileExists(minimapFile) then
+            g_map.loadOtcm(minimapFile)
+        end
     end
 
     self.ui.minimapBorder.minimap:load()

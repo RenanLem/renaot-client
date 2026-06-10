@@ -1,0 +1,436 @@
+// ============================================================================
+// Weapon Proficiency window — RenaOT minimal-and-safe rewrite.
+// All forward-anchor refs removed, no QtComboBox, no image-source widgets.
+// ============================================================================
+
+PerkSlot < Button
+  id: perkSlot
+  size: 80 80
+  background-color: #2a2a2a
+  border-width: 1
+  border-color: #4a4a4a
+  color: #c0c0c0
+  font: verdana-11px-rounded
+  text-wrap: true
+  text-align: center
+  padding: 22 4 4 4
+  $hover !disabled:
+    border-color: #d4a040
+    color: #ffffff
+    background-color: #353535
+  $on:
+    background-color: #6a3d11
+    color: #ffe9b0
+    border-color: #ffcc66
+  $disabled:
+    color: #555555
+    border-color: #2a2a2a
+    background-color: #181818
+
+PerkSlotIcon < UIWidget
+  size: 18 18
+  image-color: #ffe9b0
+  phantom: true
+  anchors.top: parent.top
+  anchors.left: parent.left
+  margin-top: 4
+  margin-left: 4
+
+LockIcon < UIWidget
+  size: 16 22
+  image-source: /images/game/wheel/icon-locked
+  image-color: #707070
+
+LockIconOpen < UIWidget
+  size: 16 22
+  image-source: /images/game/wheel/icon-unlocked
+  image-color: #d4a040
+
+StarIconDim < UIWidget
+  size: 22 22
+  image-source: /game_cyclopedia/images/boss/icon_star_inactive
+
+StarIconBronze < UIWidget
+  size: 22 22
+  image-source: /game_cyclopedia/images/boss/icon_star_bronze
+
+StarIconSilver < UIWidget
+  size: 22 22
+  image-source: /game_cyclopedia/images/boss/icon_star_silver
+
+StarIconGold < UIWidget
+  size: 22 22
+  image-source: /game_cyclopedia/images/boss/icon_star_gold
+
+CategoryTab < Button
+  width: 41
+  height: 22
+  font: verdana-11px-rounded
+  color: #c0c0c0
+  background-color: #2a2a2a
+  border-width: 1
+  border-color: #404040
+  $hover !checked:
+    background-color: #353535
+    color: #ffffff
+  $checked:
+    background-color: #6a3d11
+    color: #ffe9b0
+    border-color: #d4a040
+
+ColumnHeader < Label
+  height: 16
+  color: #d4a040
+  font: verdana-11px-rounded
+  text-align: center
+
+BonusLine < Label
+  height: 16
+  color: #ffe9b0
+  font: verdana-11px-rounded
+  text-align: left
+
+MainWindow
+  id: proficiencyWindow
+  !text: tr('Weapon Proficiency')
+  size: 950 640
+
+  // ── Sidebar (left) ──
+  Panel
+    id: sidebar
+    anchors.top: parent.top
+    anchors.left: parent.left
+    width: 270
+    height: 530
+    background-color: #1a1a1a
+    border-width: 1
+    border-color: #404040
+
+    UIItem
+      id: itemPreview
+      anchors.top: parent.top
+      anchors.left: parent.left
+      margin-top: 10
+      margin-left: 10
+      size: 64 64
+      virtual: true
+
+    Label
+      id: itemName
+      anchors.top: parent.top
+      anchors.left: prev.right
+      anchors.right: parent.right
+      margin-top: 12
+      margin-left: 10
+      margin-right: 10
+      color: #ffffff
+      text-align: left
+      text-wrap: true
+      font: verdana-11px-rounded
+      !text: tr('No weapon selected')
+
+    Label
+      id: xpLabel
+      anchors.top: prev.bottom
+      anchors.left: prev.left
+      anchors.right: prev.right
+      margin-top: 6
+      color: #c0c0c0
+      text-align: left
+      font: verdana-11px-rounded
+      !text: tr('0 / 0')
+
+    Label
+      id: xpToNext
+      anchors.top: prev.bottom
+      anchors.left: prev.left
+      anchors.right: prev.right
+      margin-top: 2
+      color: #909090
+      text-align: left
+      font: verdana-11px-rounded
+      !text: tr('-- XP for next level')
+
+    ProgressBar
+      id: xpBar
+      anchors.top: itemPreview.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      margin-top: 12
+      margin-left: 10
+      margin-right: 10
+      height: 12
+      background-color: #d4a040
+      border-width: 1
+      border-color: #404040
+      visible: true
+
+    Panel
+      id: categoryBanner
+      anchors.top: prev.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      margin-top: 10
+      margin-left: 10
+      margin-right: 10
+      height: 24
+      background-color: #2a2a2a
+      border-width: 1
+      border-color: #404040
+
+      Label
+        id: categoryLabel
+        anchors.fill: parent
+        color: #d4a040
+        text-align: center
+        font: verdana-11px-rounded
+        !text: tr('Weapons: --')
+
+    Panel
+      id: tabsRow
+      anchors.top: prev.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      margin-top: 8
+      margin-left: 8
+      margin-right: 8
+      height: 24
+      layout:
+        type: horizontalBox
+        spacing: 2
+      CategoryTab
+        id: tabSwords
+        text: Swords
+      CategoryTab
+        id: tabAxes
+        text: Axes
+      CategoryTab
+        id: tabClubs
+        text: Clubs
+      CategoryTab
+        id: tabDistance
+        text: Distance
+      CategoryTab
+        id: tabMagic
+        text: Magic
+      CategoryTab
+        id: tabFist
+        text: Fist
+
+    TextEdit
+      id: searchBox
+      anchors.top: prev.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      margin-top: 8
+      margin-left: 8
+      margin-right: 8
+      height: 22
+      !placeholder: tr('Type to filter weapons')
+
+    ScrollablePanel
+      id: itemList
+      anchors.top: prev.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.bottom: parent.bottom
+      margin-top: 6
+      margin-left: 8
+      margin-right: 8
+      margin-bottom: 8
+      background-color: #15151580
+      border-width: 1
+      border-color: #303030
+      layout:
+        type: grid
+        cell-size: 36 36
+        cell-spacing: 3
+        flow: true
+        num-columns: 6
+
+  // ── Right pane ──
+
+  Panel
+    id: headerStrip
+    anchors.top: parent.top
+    anchors.left: sidebar.right
+    anchors.right: parent.right
+    margin-top: 4
+    margin-left: 8
+    margin-right: 8
+    height: 24
+    background-color: #232323
+    border-width: 1
+    border-color: #404040
+
+    Label
+      id: levelText
+      anchors.left: parent.left
+      anchors.verticalCenter: parent.verticalCenter
+      margin-left: 10
+      color: #ffffff
+      text-align: left
+      font: verdana-11px-rounded
+      !text: tr('Mastery Level: 0 / 7')
+
+    Label
+      id: totalPerksText
+      anchors.right: parent.right
+      anchors.verticalCenter: parent.verticalCenter
+      margin-right: 10
+      color: #a0d6a0
+      text-align: right
+      font: verdana-11px-rounded
+      !text: tr('Perks selected: 0 / 7')
+
+  Panel
+    id: starsRow
+    anchors.top: headerStrip.bottom
+    anchors.left: sidebar.right
+    anchors.right: parent.right
+    margin-top: 6
+    margin-left: 8
+    margin-right: 8
+    height: 24
+    layout:
+      type: grid
+      cell-size: 80 24
+      cell-spacing: 6
+      num-columns: 7
+      flow: true
+
+  Panel
+    id: levelHeaderRow
+    anchors.top: starsRow.bottom
+    anchors.left: sidebar.right
+    anchors.right: parent.right
+    margin-top: 2
+    margin-left: 8
+    margin-right: 8
+    height: 14
+    layout:
+      type: grid
+      cell-size: 80 14
+      cell-spacing: 6
+      num-columns: 7
+      flow: true
+
+  Label
+    id: statusBanner
+    anchors.top: levelHeaderRow.bottom
+    anchors.left: sidebar.right
+    anchors.right: parent.right
+    margin-top: 6
+    margin-left: 8
+    margin-right: 8
+    height: 22
+    background-color: #c97a1c
+    color: #ffffff
+    text-align: center
+    visible: false
+    font: verdana-11px-rounded
+    !text: tr('Perks are inactive — requirement not met.')
+
+  Panel
+    id: perksGrid
+    anchors.top: statusBanner.bottom
+    anchors.left: sidebar.right
+    anchors.right: parent.right
+    margin-top: 6
+    margin-left: 8
+    margin-right: 8
+    height: 264
+    layout:
+      type: grid
+      cell-size: 80 80
+      cell-spacing: 6
+      num-columns: 7
+      flow: true
+
+  Panel
+    id: lockRow
+    anchors.top: perksGrid.bottom
+    anchors.left: sidebar.right
+    anchors.right: parent.right
+    margin-top: 10
+    margin-left: 8
+    margin-right: 8
+    height: 28
+    layout:
+      type: grid
+      cell-size: 80 22
+      cell-spacing: 6
+      num-columns: 7
+      flow: true
+
+  Panel
+    id: bonusPanel
+    anchors.top: lockRow.bottom
+    anchors.left: sidebar.right
+    anchors.right: parent.right
+    margin-top: 10
+    margin-left: 8
+    margin-right: 8
+    height: 80
+    background-color: #1a1a1a
+    border-width: 1
+    border-color: #404040
+
+    Label
+      id: bonusTitle
+      anchors.top: parent.top
+      anchors.left: parent.left
+      anchors.right: parent.right
+      margin-top: 4
+      color: #d4a040
+      text-align: center
+      font: verdana-11px-rounded
+      !text: tr('Active Bonuses')
+
+    Panel
+      id: bonusGrid
+      anchors.top: prev.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.bottom: parent.bottom
+      margin-top: 4
+      margin-left: 12
+      margin-right: 12
+      margin-bottom: 6
+      layout:
+        type: grid
+        cell-size: 200 18
+        cell-spacing: 4
+        flow: true
+        num-columns: 3
+
+  // Footer
+  Button
+    id: closeButton
+    !text: tr('Close')
+    anchors.bottom: parent.bottom
+    anchors.right: parent.right
+    margin-bottom: 6
+    margin-right: 6
+    width: 72
+    height: 24
+
+  Button
+    id: resetButton
+    !text: tr('Reset All')
+    anchors.bottom: parent.bottom
+    anchors.right: closeButton.left
+    margin-bottom: 6
+    margin-right: 6
+    width: 88
+    height: 24
+
+  Button
+    id: applyButton
+    !text: tr('Refresh')
+    anchors.bottom: parent.bottom
+    anchors.right: resetButton.left
+    margin-bottom: 6
+    margin-right: 6
+    width: 72
+    height: 24

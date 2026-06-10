@@ -1,0 +1,13 @@
+Module
+  name: game_cave_light
+  description: Mantem cavernas sempre iluminadas (luz ambiente cheia quando z > 7).
+  author: RTC
+  version: 1.0
+
+  autoload: true
+  autoload-priority: 1100
+  sandboxed: true
+  dependencies: [ game_interface ]
+  scripts: [ cave_light ]
+  @onLoad: init()
+  @onUnload: terminate()

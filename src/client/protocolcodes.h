@@ -356,6 +356,7 @@ namespace Proto
         ClientBestiaryRequestSearch = 227,
         ClientCyclopediaSendBuyCharmRune = 228,
         ClientCyclopediaRequestCharacterInfo = 229,
+        ClientWeaponProficiencyAction = 234, // 0xEA - paired with GameServerWeaponProficiencyInfo (196 / 0xC4)
         ClientBugReport = 230,
         ClientWheelGemAction = 231, // 0xE7 usado em gemas, desabilitado para ClientRuleViolation = 231
         ClientDebugReport = 232,

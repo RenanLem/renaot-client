@@ -636,6 +636,22 @@ function ApiJson.createOrUpdatePassive(barId, buttonId, passiveId)
     }
 end
 
+function ApiJson.createOrUpdateEquipments(barId, buttonId, items, iconItemId, iconTier, setName)
+    barId = tonumber(barId)
+    buttonId = tonumber(buttonId)
+    if not barId or not buttonId then
+        return
+    end
+
+    local entry = getOrCreateMappingEntry(barId, buttonId)
+    entry["actionsetting"] = {
+        ["equipmentsSet"] = items or {},
+        ["equipmentsIcon"] = iconItemId or 0,
+        ["equipmentsIconTier"] = iconTier or 0,
+        ["equipmentsName"] = setName or ""
+    }
+end
+
 function ApiJson.createOrUpdateSpecialAction(barId, buttonId, specialAction)
     barId = tonumber(barId)
     buttonId = tonumber(buttonId)

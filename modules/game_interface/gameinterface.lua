@@ -1,3 +1,14 @@
+local FORCE_USEWITH_IDS = {
+    [25060] = true, [25061] = true, [25103] = true, [25104] = true,
+    [25174] = true, [25175] = true, [25182] = true, [25183] = true,
+    [25202] = true, [24964] = true,
+}
+
+function isForceUseWith(thing)
+    if not thing or not thing.getId then return false end
+    return FORCE_USEWITH_IDS[thing:getId()] == true
+end
+
 gameRootPanel = nil
 gameMapPanel = nil
 gameMainRightPanel = nil
@@ -666,7 +677,7 @@ function createThingMenu(menuPosition, lookThing, useThing, creatureThing)
                 end, shortcut)
             end
         else
-            if useThing:isMultiUse() then
+            if useThing:isMultiUse() or isForceUseWith(useThing) then
                 menu:addOption(tr('Use with ...'), function()
                     startUseWith(useThing)
                 end, shortcut)

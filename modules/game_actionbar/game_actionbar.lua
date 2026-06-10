@@ -655,14 +655,15 @@ function configureActionBar(key, value)
     
     local actionbar = actionBars[n]
     if actionbar then
-        actionbar:setVisible(value)
-        actionbar:setOn(value)
+        ApiJson.setBarVisibility(n, key, value)
         if value then
             addActiveActionBar(actionbar)
             setupActionBar(n)
         else
             removeActiveActionBar(actionbar)
         end
+        actionbar:setVisible(value)
+        actionbar:setOn(value)
         if resizeLockButtons then
             resizeLockButtons()
         end

@@ -49,44 +49,18 @@ if ENABLE_SERVERS then
     -- @table Servers_init
     --
     Servers_init = {
-
-        -- Local login server
-        ---
-        -- Configuration for local login server.
-        -- @class table
-        -- @name local_login
-        -- @field port Port used for HTTP connection
-        -- @field protocol Protocol identifier used by the application
-        -- @field httpLogin Enables HTTP-based login on the server
-        -- @field useAuthenticator Enables additional authentication layer
-        --
-        ["http://127.0.0.1/login.php"] = {
+        ["http://100.119.218.56/myaac/login.php"] = {
             port = 80,
-            protocol = 1412,
+            protocol = 1500,
             httpLogin = true,
             useAuthenticator = false
-        },
-
-        -- External server
-        ---
-        -- Configuration for external server ip.net.
-        -- @class table
-        -- @name ip_net
-        -- @field port TCP port used for connection
-        -- @field protocol Protocol identifier used by the server
-        -- @field httpLogin Indicates if the server allows HTTP login
-        --
-        ["ip.net"] = {
-            port = 7171,
-            protocol = 860,
-            httpLogin = false
         }
     }
 end
 
-g_app.setName("OTClient - Redemption");
-g_app.setCompactName("otclient");
-g_app.setOrganizationName("otcr");
+g_app.setName("RenaOT");
+g_app.setCompactName("renaot");
+g_app.setOrganizationName("renaot");
 
 g_app.hasUpdater = function()
     return (Services.updater and Services.updater ~= "" and g_modules.getModule("updater"))

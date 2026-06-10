@@ -1,0 +1,11 @@
+Module
+  name: renaot_hud
+  description: Compact session HUD — online time, XP/h, kills, ETA to next level
+  author: RenaOT
+  sandboxed: true
+  autoload: true
+  autoload-priority: 1500
+  scripts: [ hud ]
+  dependencies: [ game_interface ]
+  @onLoad: init()
+  @onUnload: terminate()

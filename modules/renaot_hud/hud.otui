@@ -1,0 +1,52 @@
+SessionHudPanel < MiniWindow
+  id: sessionHudPanel
+  height: 130
+  text: Session
+  draggable: true
+  &save: true
+
+  MiniWindowContents
+    padding: 4 4 4 4
+    layout:
+      type: verticalBox
+      spacing: 2
+
+    UIWidget
+      id: online
+      height: 16
+      text: Online: 00:00:00
+      text-align: left
+      color: #c0d0ffff
+      font: verdana-11px-rounded
+
+    UIWidget
+      id: xph
+      height: 16
+      text: XP/h: --
+      text-align: left
+      color: #c0ffc0ff
+      font: verdana-11px-rounded
+
+    UIWidget
+      id: kills
+      height: 16
+      text: Kills: 0
+      text-align: left
+      color: #ffd0a0ff
+      font: verdana-11px-rounded
+
+    UIWidget
+      id: eta
+      height: 16
+      text: Next level: --
+      text-align: left
+      color: #ffe080ff
+      font: verdana-11px-rounded
+
+    UIWidget
+      id: gained
+      height: 16
+      text: XP gained: 0
+      text-align: left
+      color: #c0c0c0ff
+      font: verdana-11px-rounded

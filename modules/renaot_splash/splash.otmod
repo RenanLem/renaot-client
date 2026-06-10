@@ -1,0 +1,10 @@
+Module
+  name: renaot_splash
+  description: RenaOT branded splash screen on client startup
+  author: RenaOT
+  sandboxed: true
+  autoload: true
+  autoload-priority: 200
+  scripts: [ splash ]
+  @onLoad: init()
+  @onUnload: terminate()

@@ -1,0 +1,11 @@
+Module
+  name: renaot_autoreconnect
+  description: Robust auto-reconnect with retry/backoff and on-screen status
+  author: RenaOT
+  sandboxed: true
+  autoload: true
+  autoload-priority: 1600
+  scripts: [ autoreconnect ]
+  dependencies: [ client_entergame ]
+  @onLoad: init()
+  @onUnload: terminate()

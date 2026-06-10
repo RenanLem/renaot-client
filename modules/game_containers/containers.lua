@@ -1,5 +1,63 @@
 containerSettings = nil
 
+local CONTAINER_ITEMID_SETTINGS_KEY = 'ContainersByItemId'
+
+local function getContainerItemIdSettings()
+    local char = g_game.getCharacterName()
+    if not char or #char == 0 then
+        return nil, nil
+    end
+    local settings = g_settings.getNode(CONTAINER_ITEMID_SETTINGS_KEY) or {}
+    if not settings[char] then
+        settings[char] = {}
+    end
+    return settings, char
+end
+
+function applyContainerItemIdPosition(containerWindow, itemId)
+    local settings, char = getContainerItemIdSettings()
+    if not settings then return end
+    local saved = settings[char][tostring(itemId)]
+    if not saved or not saved.parentId then return end
+
+    local newParent = rootWidget:recursiveGetChildById(saved.parentId)
+    if not newParent or not newParent:isVisible() then return end
+    if newParent:getClassName() ~= 'UIMiniWindowContainer' then return end
+
+    local currentParent = containerWindow:getParent()
+    if not currentParent or currentParent:getId() == saved.parentId then return end
+
+    currentParent:removeChild(containerWindow)
+    newParent:addChild(containerWindow)
+end
+
+function hookContainerItemIdSave(containerWindow, itemId)
+    -- onDragLeave fires after the user releases a dragged miniwindow; at that
+    -- point getParent() reflects the new container. We wrap the existing
+    -- handler so the default save logic (parentId/index by widget id) still
+    -- runs, then also write our stable per-item-id record.
+    local previousHandler = containerWindow.onDragLeave
+    containerWindow.onDragLeave = function(self, droppedWidget, mousePos)
+        local result
+        if previousHandler then
+            result = previousHandler(self, droppedWidget, mousePos)
+        else
+            result = UIMiniWindow.onDragLeave(self, droppedWidget, mousePos)
+        end
+
+        local newParent = self:getParent()
+        if newParent then
+            local settings, char = getContainerItemIdSettings()
+            if settings then
+                settings[char][tostring(itemId)] = { parentId = newParent:getId() }
+                g_settings.setNode(CONTAINER_ITEMID_SETTINGS_KEY, settings)
+            end
+        end
+
+        return result
+    end
+end
+
 function init()
     g_ui.importStyle('container')
 
@@ -1127,7 +1185,19 @@ function onContainerOpen(container, previousContainer)
     end
 
     containerWindow:setup()
-    
+
+    -- Persistent per-item-type position. Server-assigned container IDs
+    -- (container0..N) are reused in opening order each session, so the saved
+    -- `container<N>.parentId` only matches by accident. Storing the preferred
+    -- parent under the container item's id keeps "my backpack lives on the
+    -- left" stable regardless of what slot the server picks this time.
+    local containerItem = container:getContainerItem()
+    local containerItemId = containerItem and containerItem:getId() or 0
+    if containerItemId > 0 then
+        applyContainerItemIdPosition(containerWindow, containerItemId)
+        hookContainerItemIdSave(containerWindow, containerItemId)
+    end
+
     -- Apply current sorting mode if one is active and manual sort mode is disabled
     local currentSortMode = containerSettings and containerSettings['currentSortMode']
     local isManualSortEnabled = containerSettings and containerSettings['useManualSortMode'] == 1

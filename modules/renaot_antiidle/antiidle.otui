@@ -1,0 +1,26 @@
+AntiIdlePanel < MiniWindow
+  id: antiIdlePanel
+  height: 70
+  text: Anti-Idle
+  draggable: true
+  &save: true
+
+  MiniWindowContents
+    padding: 4 4 4 4
+    layout:
+      type: verticalBox
+      spacing: 4
+
+    UIWidget
+      id: status
+      height: 16
+      text: --
+      text-align: center
+      color: #b0b0b0ff
+      font: verdana-11px-rounded
+
+    Button
+      id: toggle
+      height: 24
+      text: ANTI-IDLE: OFF
+      color: #ff7070ff

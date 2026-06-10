@@ -84,6 +84,7 @@ local UseTypeChatText = 6
 local UseTypePassiveAbility = 7
 local UseTypeSpecialAction = 8
 local UseTypeUseAtCursorPosition = 9
+local UseTypeEquipments = 10
 
 UseTypes = {
     ["UseOnYourself"] = UseTypeUseOnYourself,
@@ -95,6 +96,7 @@ UseTypes = {
     ["passiveAbility"] = UseTypePassiveAbility,
     ["specialAction"] = UseTypeSpecialAction,
     ["UseAtCursorPosition"] = UseTypeUseAtCursorPosition,
+    ["Equipments"] = UseTypeEquipments,
 }
 
 UseTypesTip = {
@@ -103,7 +105,24 @@ UseTypesTip = {
     [UseTypeSelectUseTarget] = "Use %s with Crosshair",
     [UseTypeUseAtCursorPosition] = "Use %s at Cursor Position",
     [UseTypeEquip] = "%s %s",
-    [UseTypeUse] = "Use %s"
+    [UseTypeUse] = "Use %s",
+    [UseTypeEquipments] = "Equip set: %s"
+}
+
+-- Editor layout for the Assign Equipments window. Order matches widget IDs in
+-- modules/game_actionbar/otui/equipments.otui; each entry binds an editor slot
+-- to its inventory position so equipping reuses the standard equipItemId flow.
+EquipmentSlotsList = {
+    { id = "helmet",   slot = InventorySlotHead,   icon = "/images/inventory/inventory_head" },
+    { id = "amulet",   slot = InventorySlotNeck,   icon = "/images/inventory/inventory_neck" },
+    { id = "backpack", slot = InventorySlotBack,   icon = "/images/inventory/inventory_back" },
+    { id = "armor",    slot = InventorySlotBody,   icon = "/images/inventory/inventory_torso" },
+    { id = "shield",   slot = InventorySlotRight,  icon = "/images/inventory/inventory_right_hand" },
+    { id = "sword",    slot = InventorySlotLeft,   icon = "/images/inventory/inventory_left_hand" },
+    { id = "legs",     slot = InventorySlotLeg,    icon = "/images/inventory/inventory_legs" },
+    { id = "boots",    slot = InventorySlotFeet,   icon = "/images/inventory/inventory_feet" },
+    { id = "ring",     slot = InventorySlotFinger, icon = "/images/inventory/inventory_finger" },
+    { id = "ammo",     slot = InventorySlotAmmo,   icon = "/images/inventory/inventory_hip" },
 }
 
 PassiveAbilities = {

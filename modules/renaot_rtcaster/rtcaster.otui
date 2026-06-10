@@ -1,0 +1,762 @@
+RTCasterSlotRow < UIWidget
+  height: 24
+  layout:
+    type: horizontalBox
+    spacing: 6
+
+  TextEdit
+    id: spell
+    width: 140
+    height: 22
+
+  ComboBox
+    id: mana
+    width: 70
+    height: 22
+
+  ComboBox
+    id: creatures
+    width: 60
+    height: 22
+
+  ComboBox
+    id: priority
+    width: 60
+    height: 22
+
+RTCasterHealRow < UIWidget
+  height: 24
+  layout:
+    type: horizontalBox
+    spacing: 6
+
+  TextEdit
+    id: spell
+    width: 140
+    height: 22
+
+  ComboBox
+    id: hp
+    width: 70
+    height: 22
+
+  ComboBox
+    id: mana
+    width: 70
+    height: 22
+
+RTCasterPotionRow < UIWidget
+  height: 24
+  layout:
+    type: horizontalBox
+    spacing: 6
+
+  ComboBox
+    id: potionId
+    width: 180
+    height: 22
+
+  ComboBox
+    id: threshold
+    width: 70
+    height: 22
+
+RTCasterKeyCapture < MainWindow
+  id: rtcasterKeyCapture
+  !text: tr('Press a key')
+  size: 280 130
+
+  Label
+    id: hint
+    !text: tr('Press the key combo to bind (Esc to cancel)')
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    text-align: center
+    text-wrap: true
+    height: 30
+
+  Label
+    id: comboPreview
+    text: --
+    anchors.top: hint.bottom
+    margin-top: 8
+    anchors.left: parent.left
+    anchors.right: parent.right
+    text-align: center
+    color: #ffd700
+    height: 20
+
+  Button
+    id: cancelButton
+    !text: tr('Cancel')
+    width: 70
+    height: 22
+    anchors.bottom: parent.bottom
+    anchors.right: parent.right
+
+  Button
+    id: clearButton
+    !text: tr('Clear')
+    width: 70
+    height: 22
+    anchors.bottom: parent.bottom
+    anchors.right: cancelButton.left
+    margin-right: 6
+
+RTCasterStatsWindow < MainWindow
+  id: rtcasterStatsWindow
+  !text: tr('Helper Stats')
+  size: 320 280
+
+  TextList
+    id: statsList
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: closeStats.top
+    margin-bottom: 8
+    vertical-scrollbar: statsScroll
+
+  VerticalScrollBar
+    id: statsScroll
+    anchors.top: statsList.top
+    anchors.bottom: statsList.bottom
+    anchors.right: parent.right
+    step: 14
+    pixels-scroll: true
+
+  Button
+    id: resetStats
+    !text: tr('Reset')
+    width: 80
+    height: 22
+    anchors.bottom: parent.bottom
+    anchors.left: parent.left
+
+  Button
+    id: closeStats
+    !text: tr('Close')
+    width: 80
+    height: 22
+    anchors.bottom: parent.bottom
+    anchors.right: parent.right
+
+RTCasterWindow < MainWindow
+  id: rtcasterWindow
+  !text: tr('RTCaster')
+  size: 430 680
+
+  Button
+    id: tabHealing
+    text: Heal
+    width: 80
+    height: 24
+    anchors.top: parent.top
+    anchors.left: parent.left
+
+  Button
+    id: tabTools
+    text: Tools
+    width: 80
+    height: 24
+    anchors.top: parent.top
+    anchors.left: tabHealing.right
+    margin-left: 4
+
+  Button
+    id: tabShooter
+    text: Shooter
+    width: 80
+    height: 24
+    anchors.top: parent.top
+    anchors.left: tabTools.right
+    margin-left: 4
+
+  HorizontalSeparator
+    id: tabSep
+    anchors.top: tabHealing.bottom
+    margin-top: 4
+    anchors.left: parent.left
+    anchors.right: parent.right
+
+  Button
+    id: closeButton
+    !text: tr('Close')
+    width: 60
+    height: 22
+    anchors.bottom: parent.bottom
+    anchors.right: parent.right
+
+  Button
+    id: helperStats
+    !text: tr('Helper Stats')
+    width: 90
+    height: 22
+    anchors.bottom: parent.bottom
+    anchors.right: closeButton.left
+    margin-right: 6
+
+  Button
+    id: saveButton
+    !text: tr('Save')
+    width: 70
+    height: 22
+    color: #80ff80
+    anchors.bottom: parent.bottom
+    anchors.left: parent.left
+
+  Label
+    id: statusLabel
+    text: Status: Disabled
+    anchors.bottom: saveButton.top
+    margin-bottom: 6
+    anchors.left: parent.left
+    anchors.right: parent.right
+    text-align: left
+    text-auto-resize: false
+    color: #ff7070
+
+  HorizontalSeparator
+    id: bottomSep
+    anchors.bottom: statusLabel.top
+    margin-bottom: 6
+    anchors.left: parent.left
+    anchors.right: parent.right
+
+  Panel
+    id: panelHealing
+    anchors.top: tabSep.bottom
+    margin-top: 6
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: bottomSep.top
+    margin-bottom: 6
+
+    Label
+      id: healHeader
+      !text: tr('Auto Healing Helper')
+      anchors.top: parent.top
+      anchors.left: parent.left
+      anchors.right: parent.right
+      text-align: center
+      color: #ffd700
+      height: 18
+
+    Label
+      id: healSpellLabel
+      text: Spell Healing
+      anchors.top: healHeader.bottom
+      margin-top: 6
+      anchors.left: parent.left
+      width: 140
+      height: 18
+      text-align: left
+      color: #c0c0c0
+
+    Label
+      id: healSpellHp
+      text: HP
+      anchors.top: healSpellLabel.top
+      anchors.left: healSpellLabel.right
+      margin-left: 6
+      width: 70
+      height: 18
+      text-align: center
+      color: #c0c0c0
+
+    Label
+      id: healSpellMana
+      text: Mana
+      anchors.top: healSpellLabel.top
+      anchors.left: healSpellHp.right
+      margin-left: 6
+      width: 70
+      height: 18
+      text-align: center
+      color: #c0c0c0
+
+    Panel
+      id: healSpellSlots
+      anchors.top: healSpellLabel.bottom
+      margin-top: 4
+      anchors.left: parent.left
+      anchors.right: parent.right
+      height: 90
+      layout:
+        type: verticalBox
+        spacing: 4
+
+    Label
+      id: healHpPotionLabel
+      text: HP Potion
+      anchors.top: healSpellSlots.bottom
+      margin-top: 10
+      anchors.left: parent.left
+      width: 180
+      height: 18
+      text-align: left
+      color: #c0c0c0
+
+    Label
+      id: healHpPotionThr
+      text: HP
+      anchors.top: healHpPotionLabel.top
+      anchors.left: healHpPotionLabel.right
+      margin-left: 6
+      width: 70
+      height: 18
+      text-align: center
+      color: #c0c0c0
+
+    Panel
+      id: healHpPotionSlots
+      anchors.top: healHpPotionLabel.bottom
+      margin-top: 4
+      anchors.left: parent.left
+      anchors.right: parent.right
+      height: 90
+      layout:
+        type: verticalBox
+        spacing: 4
+
+    Label
+      id: healManaPotionLabel
+      text: Mana Potion
+      anchors.top: healHpPotionSlots.bottom
+      margin-top: 10
+      anchors.left: parent.left
+      width: 180
+      height: 18
+      text-align: left
+      color: #c0c0c0
+
+    Label
+      id: healManaPotionThr
+      text: Mana
+      anchors.top: healManaPotionLabel.top
+      anchors.left: healManaPotionLabel.right
+      margin-left: 6
+      width: 70
+      height: 18
+      text-align: center
+      color: #c0c0c0
+
+    Panel
+      id: healManaPotionSlots
+      anchors.top: healManaPotionLabel.bottom
+      margin-top: 4
+      anchors.left: parent.left
+      anchors.right: parent.right
+      height: 90
+      layout:
+        type: verticalBox
+        spacing: 4
+
+    CheckBox
+      id: healEnabled
+      !text: tr('Enable Auto Healing')
+      anchors.top: healManaPotionSlots.bottom
+      margin-top: 10
+      anchors.left: parent.left
+      width: 220
+      height: 18
+
+  Panel
+    id: panelTools
+    anchors.top: tabSep.bottom
+    margin-top: 6
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: bottomSep.top
+    margin-bottom: 6
+
+    Label
+      id: toolsHeader
+      !text: tr('Tools Helper')
+      anchors.top: parent.top
+      anchors.left: parent.left
+      anchors.right: parent.right
+      text-align: center
+      color: #ffd700
+      height: 18
+
+    Label
+      id: manaTrainLabel
+      text: Mana Training
+      anchors.top: toolsHeader.bottom
+      margin-top: 8
+      anchors.left: parent.left
+      width: 200
+      color: #80c0ff
+
+    CheckBox
+      id: manaTrainEnable
+      !text: tr('Enable')
+      anchors.top: manaTrainLabel.bottom
+      margin-top: 2
+      anchors.left: parent.left
+      width: 80
+
+    TextEdit
+      id: manaTrainSpell
+      width: 130
+      height: 22
+      anchors.verticalCenter: manaTrainEnable.verticalCenter
+      anchors.left: manaTrainEnable.right
+      margin-left: 6
+
+    ComboBox
+      id: manaTrainMana
+      width: 70
+      height: 22
+      anchors.verticalCenter: manaTrainEnable.verticalCenter
+      anchors.left: manaTrainSpell.right
+      margin-left: 6
+
+    Label
+      id: autoHasteLabel
+      text: Auto Haste
+      anchors.top: manaTrainEnable.bottom
+      margin-top: 12
+      anchors.left: parent.left
+      width: 200
+      color: #80c0ff
+
+    CheckBox
+      id: autoHasteEnable
+      !text: tr('Enable')
+      anchors.top: autoHasteLabel.bottom
+      margin-top: 2
+      anchors.left: parent.left
+      width: 80
+
+    CheckBox
+      id: autoHastePz
+      !text: tr('PZ Cast')
+      anchors.verticalCenter: autoHasteEnable.verticalCenter
+      anchors.left: autoHasteEnable.right
+      margin-left: 6
+      width: 80
+
+    TextEdit
+      id: autoHasteSpell
+      width: 130
+      height: 22
+      anchors.verticalCenter: autoHasteEnable.verticalCenter
+      anchors.left: autoHastePz.right
+      margin-left: 6
+
+    Label
+      id: exerciseLabel
+      text: Exercise Training
+      anchors.top: autoHasteEnable.bottom
+      margin-top: 12
+      anchors.left: parent.left
+      width: 200
+      color: #80c0ff
+
+    CheckBox
+      id: exerciseEnable
+      !text: tr('Enable')
+      anchors.top: exerciseLabel.bottom
+      margin-top: 2
+      anchors.left: parent.left
+      width: 80
+
+    TextEdit
+      id: exerciseItemId
+      width: 90
+      height: 22
+      anchors.verticalCenter: exerciseEnable.verticalCenter
+      anchors.left: exerciseEnable.right
+      margin-left: 6
+
+    Label
+      id: otherLabel
+      text: Others Tools
+      anchors.top: exerciseEnable.bottom
+      margin-top: 12
+      anchors.left: parent.left
+      width: 200
+      color: #80c0ff
+
+    CheckBox
+      id: changeGoldEnable
+      !text: tr('Change Gold')
+      anchors.top: otherLabel.bottom
+      margin-top: 2
+      anchors.left: parent.left
+      width: 130
+
+    CheckBox
+      id: autoEatEnable
+      !text: tr('Auto Eat Food')
+      anchors.top: changeGoldEnable.bottom
+      margin-top: 4
+      anchors.left: parent.left
+      width: 130
+
+    CheckBox
+      id: autoReconnectEnable
+      !text: tr('Auto Reconnect')
+      anchors.top: autoEatEnable.bottom
+      margin-top: 4
+      anchors.left: parent.left
+      width: 130
+
+  Panel
+    id: panelShooter
+    anchors.top: tabSep.bottom
+    margin-top: 6
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: bottomSep.top
+    margin-bottom: 6
+
+    Label
+      id: presetsLabel
+      !text: tr('Presets:')
+      anchors.top: parent.top
+      anchors.left: parent.left
+      width: 60
+      height: 22
+      text-align: left
+
+    ComboBox
+      id: presetCombo
+      width: 130
+      height: 20
+      anchors.verticalCenter: presetsLabel.verticalCenter
+      anchors.left: presetsLabel.right
+      margin-left: 4
+
+    Button
+      id: presetDelete
+      text: X
+      color: #ff8080
+      width: 22
+      height: 22
+      anchors.verticalCenter: presetsLabel.verticalCenter
+      anchors.left: presetCombo.right
+      margin-left: 4
+
+    Button
+      id: presetNew
+      !text: tr('New')
+      width: 50
+      height: 22
+      anchors.verticalCenter: presetsLabel.verticalCenter
+      anchors.left: presetDelete.right
+      margin-left: 4
+
+    Button
+      id: presetRename
+      !text: tr('Rename')
+      width: 60
+      height: 22
+      anchors.verticalCenter: presetsLabel.verticalCenter
+      anchors.left: presetNew.right
+      margin-left: 4
+
+    HorizontalSeparator
+      id: sep1
+      anchors.top: presetsLabel.bottom
+      margin-top: 8
+      anchors.left: parent.left
+      anchors.right: parent.right
+
+    Label
+      id: helperHeader
+      !text: tr('Spell Shooter Helper')
+      anchors.top: sep1.bottom
+      margin-top: 6
+      anchors.left: parent.left
+      anchors.right: parent.right
+      height: 18
+      text-align: center
+      color: #ffd700
+      font: verdana-11px-rounded
+
+    Label
+      id: colSpell
+      text: Spell
+      anchors.top: helperHeader.bottom
+      margin-top: 4
+      anchors.left: parent.left
+      width: 140
+      text-align: left
+      color: #c0c0c0
+
+    Label
+      id: colMana
+      text: Mana
+      anchors.top: colSpell.top
+      anchors.left: colSpell.right
+      margin-left: 6
+      width: 70
+      text-align: center
+      color: #c0c0c0
+
+    Label
+      id: colCreatures
+      text: Mobs
+      anchors.top: colSpell.top
+      anchors.left: colMana.right
+      margin-left: 6
+      width: 60
+      text-align: center
+      color: #c0c0c0
+
+    Label
+      id: colPriority
+      text: Priority
+      anchors.top: colSpell.top
+      anchors.left: colCreatures.right
+      margin-left: 6
+      width: 60
+      text-align: center
+      color: #c0c0c0
+
+    Panel
+      id: slotsPanel
+      anchors.top: colSpell.bottom
+      margin-top: 4
+      anchors.left: parent.left
+      anchors.right: parent.right
+      height: 150
+      layout:
+        type: verticalBox
+        spacing: 4
+
+    HorizontalSeparator
+      id: sep2
+      anchors.top: slotsPanel.bottom
+      margin-top: 8
+      anchors.left: parent.left
+      anchors.right: parent.right
+
+    CheckBox
+      id: autoTargetCheck
+      !text: tr('Auto Target')
+      anchors.top: sep2.bottom
+      margin-top: 6
+      anchors.left: parent.left
+      width: 100
+      height: 18
+
+    ComboBox
+      id: autoTargetMode
+      width: 110
+      height: 20
+      anchors.verticalCenter: autoTargetCheck.verticalCenter
+      anchors.left: autoTargetCheck.right
+      margin-left: 6
+
+    Button
+      id: autoTargetSetKey
+      !text: tr('Set Key')
+      width: 60
+      height: 20
+      anchors.verticalCenter: autoTargetCheck.verticalCenter
+      anchors.left: autoTargetMode.right
+      margin-left: 6
+
+    Label
+      id: autoTargetKeyLabel
+      text: (none)
+      anchors.verticalCenter: autoTargetCheck.verticalCenter
+      anchors.left: autoTargetSetKey.right
+      margin-left: 6
+      color: #a0d6a0
+      width: 80
+      text-align: left
+
+    CheckBox
+      id: enableCheck
+      !text: tr('Enable Shooter Helper')
+      anchors.top: autoTargetCheck.bottom
+      margin-top: 6
+      anchors.left: parent.left
+      width: 180
+      height: 18
+
+    Button
+      id: enableSetKey
+      !text: tr('Set Key')
+      width: 60
+      height: 20
+      anchors.verticalCenter: enableCheck.verticalCenter
+      anchors.left: enableCheck.right
+      margin-left: 6
+
+    Label
+      id: enableKeyLabel
+      text: (none)
+      anchors.verticalCenter: enableCheck.verticalCenter
+      anchors.left: enableSetKey.right
+      margin-left: 6
+      color: #a0d6a0
+      width: 130
+      text-align: left
+
+    CheckBox
+      id: autoUtitoCheck
+      !text: tr('Auto Utito Tempo (Knight)')
+      anchors.top: enableCheck.bottom
+      margin-top: 6
+      anchors.left: parent.left
+      width: 200
+      height: 18
+
+    Button
+      id: utitoSetKey
+      !text: tr('Set Key')
+      width: 60
+      height: 20
+      anchors.verticalCenter: autoUtitoCheck.verticalCenter
+      anchors.left: autoUtitoCheck.right
+      margin-left: 6
+
+    Label
+      id: utitoKeyLabel
+      text: (none)
+      anchors.verticalCenter: autoUtitoCheck.verticalCenter
+      anchors.left: utitoSetKey.right
+      margin-left: 6
+      color: #a0d6a0
+      width: 80
+      text-align: left
+
+    Label
+      id: autoUtitoStatus
+      text: --
+      anchors.top: autoUtitoCheck.bottom
+      margin-top: 4
+      anchors.left: parent.left
+      color: #a0a0a0
+      width: 240
+      text-align: left
+
+RTCasterMiniPanel < MiniWindow
+  id: rtcasterMiniPanel
+  !text: tr('RTCaster')
+  height: 80
+  &save: true
+
+  MiniWindowContents
+    padding: 4 4 4 4
+    layout:
+      type: verticalBox
+      spacing: 4
+
+    Button
+      id: openConfig
+      height: 22
+      !text: tr('Open RTCaster')
+
+    Button
+      id: quickToggle
+      height: 22
+      text: SHOOTER: OFF
+      color: #ff7070
