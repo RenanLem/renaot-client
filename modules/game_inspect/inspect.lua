@@ -192,9 +192,7 @@ end
 
 function InspectController:isItemProficiencyable()
     local item = self.state and self.state.activeItem
-    -- Server-side filters by weapon category; client just gates on module presence.
-    -- Items without a proficiency category (e.g. shields, armor) produce no server response.
-    return item ~= nil and modules.game_proficiency ~= nil
+    return item ~= nil and modules.game_proficiency ~= nil and item:getProficiencyId() > 0
 end
 
 -- /*=============================================

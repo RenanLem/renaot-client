@@ -1550,22 +1550,6 @@ void ProtocolGame::sendCloseImbuingWindow()
     send(msg);
 }
 
-void ProtocolGame::sendWeaponProficiencyAction(const uint8_t action, const uint16_t itemId, const uint8_t level, const uint8_t slot)
-{
-    const auto& msg = std::make_shared<OutputMessage>();
-    msg->addU8(Proto::ClientWeaponProficiencyAction);
-    msg->addU8(action);
-    msg->addU16(itemId);
-    // RESET=2 and APPLY=3 require level; APPLY also requires slot.
-    if (action == 2 || action == 3) {
-        msg->addU8(level);
-    }
-    if (action == 3) {
-        msg->addU8(slot);
-    }
-    send(msg);
-}
-
 void ProtocolGame::sendOpenRewardWall()
 {
     const auto& msg = std::make_shared<OutputMessage>();
