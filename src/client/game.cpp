@@ -263,7 +263,7 @@ void Game::processPingBack()
         if (oldPing != m_ping)
             g_lua.callGlobalField("g_game", "onPingBack", m_ping);
     } else
-        g_logger.error("got an invalid ping from server");
+        g_logger.error("Got an invalid ping from server");
 
     m_pingEvent = g_dispatcher.scheduleEvent([] { g_game.ping(); }, m_pingDelay);
 }
@@ -1826,6 +1826,165 @@ void Game::preyRequest()
     m_protocolGame->sendPreyRequest();
 }
 
+namespace
+{
+    uint8_t toServerDifficulty(const uint16_t uiDifficulty)
+    {
+        if (std::cmp_equal(uiDifficulty, 0)) {
+            g_logger.warning("ToServerDifficulty received invalid UI difficulty 0");
+            return 1;
+        }
+        if (std::cmp_greater_equal(uiDifficulty, 4)) {
+            return 3;
+        }
+        return static_cast<uint8_t>(uiDifficulty - 1);
+    }
+}
+
+void Game::bountyTaskAction(const uint8_t actionType, const uint16_t value)
+{
+    if (!canPerformGameAction())
+        return;
+
+    switch (actionType) {
+        case Otc::BOUNTY_ACTION_REQUEST:
+            m_protocolGame->sendTaskBoardAction(Otc::TASK_BOARD_OPTION_OPEN_BOUNTY);
+            break;
+        case Otc::BOUNTY_ACTION_REROLL:
+            m_protocolGame->sendTaskBoardAction(Otc::TASK_BOARD_OPTION_BOUNTY_REROLL);
+            break;
+        case Otc::BOUNTY_ACTION_SELECT:
+            m_protocolGame->sendTaskBoardAction(Otc::TASK_BOARD_OPTION_BOUNTY_SELECT_TASK, value);
+            break;
+        case Otc::BOUNTY_ACTION_CLAIM_REWARD:
+            m_protocolGame->sendTaskBoardAction(Otc::TASK_BOARD_OPTION_BOUNTY_CLAIM_REWARD);
+            break;
+        case Otc::BOUNTY_ACTION_CHANGE_DIFFICULTY:
+            m_protocolGame->sendTaskBoardAction(Otc::TASK_BOARD_OPTION_BOUNTY_CHANGE_DIFFICULTY, toServerDifficulty(value));
+            break;
+        case Otc::BOUNTY_ACTION_CLAIM_DAILY:
+            m_protocolGame->sendTaskBoardAction(Otc::TASK_BOARD_OPTION_BOUNTY_CLAIM_DAILY);
+            break;
+        default:
+            g_logger.warning("Unknown bounty task action type {}", static_cast<int>(actionType));
+            break;
+    }
+}
+
+void Game::weeklyTaskAction(const uint8_t actionType, const uint16_t value)
+{
+    if (!canPerformGameAction())
+        return;
+
+    switch (actionType) {
+        case Otc::WEEKLY_ACTION_REFRESH_DATA:
+            m_protocolGame->sendTaskBoardAction(Otc::TASK_BOARD_OPTION_OPEN_WEEKLY);
+            break;
+        case Otc::WEEKLY_ACTION_SELECT_DIFFICULTY:
+            m_protocolGame->sendTaskBoardAction(Otc::TASK_BOARD_OPTION_WEEKLY_SELECT_DIFFICULTY, toServerDifficulty(value));
+            break;
+        case Otc::WEEKLY_ACTION_DELIVER_ITEM:
+            m_protocolGame->sendTaskBoardAction(Otc::TASK_BOARD_OPTION_WEEKLY_DELIVER, value);
+            break;
+        default:
+            g_logger.warning("Unknown weekly task action type {}", static_cast<int>(actionType));
+            break;
+    }
+}
+
+void Game::taskHuntingShopRequest()
+{
+    if (!canPerformGameAction())
+        return;
+
+    m_protocolGame->sendTaskBoardAction(Otc::TASK_BOARD_OPTION_OPEN_HUNTING_SHOP);
+}
+
+void Game::taskHuntingShopPurchase(const uint8_t offerIndex)
+{
+    if (!canPerformGameAction())
+        return;
+
+    m_protocolGame->sendTaskBoardAction(Otc::TASK_BOARD_OPTION_HUNTING_SHOP_BUY_OFFER, offerIndex, 0);
+}
+
+void Game::bountyTalismanUpgrade(const uint8_t pathIndex)
+{
+    if (!canPerformGameAction())
+        return;
+
+    if (std::cmp_greater(pathIndex, 3)) {
+        g_logger.warning("BountyTalismanUpgrade: invalid pathIndex {}", static_cast<int>(pathIndex));
+        return;
+    }
+
+    m_protocolGame->sendTaskBoardAction(Otc::TASK_BOARD_OPTION_BOUNTY_TALISMAN_UPGRADE, pathIndex);
+}
+
+void Game::bountyPreferredAction(const uint8_t actionType, const uint16_t slot, const uint16_t raceId)
+{
+    if (!canPerformGameAction())
+        return;
+
+    switch (actionType) {
+        case Otc::PREFERRED_ACTION_REQUEST:
+            m_protocolGame->sendTaskBoardAction(Otc::TASK_BOARD_OPTION_OPEN_BOUNTY);
+            break;
+        case Otc::PREFERRED_ACTION_BUY_SLOT:
+            if (std::cmp_not_equal(slot, 0)) {
+                m_protocolGame->sendTaskBoardAction(Otc::TASK_BOARD_OPTION_PREFERRED_UNLOCK, slot);
+            }
+            break;
+        case Otc::PREFERRED_ACTION_SET_PREFERRED:
+            if (std::cmp_not_equal(slot, 0) && std::cmp_not_equal(raceId, 0)) {
+                m_protocolGame->sendTaskBoardAction(Otc::TASK_BOARD_OPTION_PREFERRED_ASSIGN, slot, raceId);
+            }
+            break;
+        case Otc::PREFERRED_ACTION_SET_UNWANTED:
+            if (std::cmp_not_equal(slot, 0) && std::cmp_not_equal(raceId, 0)) {
+                m_protocolGame->sendTaskBoardAction(Otc::TASK_BOARD_OPTION_UNWANTED_ASSIGN, slot, raceId);
+            }
+            break;
+        case Otc::PREFERRED_ACTION_REMOVE_PREFERRED:
+            if (std::cmp_not_equal(slot, 0)) {
+                m_protocolGame->sendTaskBoardAction(Otc::TASK_BOARD_OPTION_PREFERRED_CLEAR, slot);
+            }
+            break;
+        case Otc::PREFERRED_ACTION_REMOVE_UNWANTED:
+            if (std::cmp_not_equal(slot, 0)) {
+                m_protocolGame->sendTaskBoardAction(Otc::TASK_BOARD_OPTION_UNWANTED_CLEAR, slot);
+            }
+            break;
+        default:
+            g_logger.warning("Unknown bounty preferred action type {}", static_cast<int>(actionType));
+            break;
+    }
+}
+
+void Game::soulsealFightAction(const uint16_t raceId)
+{
+    if (!canPerformGameAction() || std::cmp_equal(raceId, 0))
+        return;
+
+    m_protocolGame->sendSoulSealsAction(raceId);
+}
+
+void Game::sendStartOfflineTraining(const uint8_t skillType)
+{
+    if (!canPerformGameAction())
+        return;
+
+    m_protocolGame->sendStartOfflineTraining(skillType);
+}
+
+void Game::sendTutorialChangeVocation(uint8_t vocationClientId)
+{
+    if (!canPerformGameAction())
+        return;
+
+    m_protocolGame->sendTutorialChangeVocation(vocationClientId);
+}
+
 void Game::openPortableForgeRequest()
 {
     if (!canPerformGameAction())
@@ -1888,28 +2047,28 @@ void Game::closeImbuingWindow()
     m_protocolGame->sendCloseImbuingWindow();
 }
 
+void Game::selectImbuementItem(const uint16_t itemId, const Position& pos, const uint8_t stackpos)
+{
+    if (!canPerformGameAction())
+        return;
+
+    m_protocolGame->sendImbuementWindowAction(Otc::IMBUEMENT_WINDOW_SELECT_ITEM, itemId, pos, stackpos);
+}
+
+void Game::selectImbuementScroll()
+{
+    if (!canPerformGameAction())
+        return;
+
+    m_protocolGame->sendImbuementWindowAction(Otc::IMBUEMENT_WINDOW_SCROLL);
+}
+
 void Game::imbuementDurations(const bool isOpen)
 {
     if (!canPerformGameAction())
         return;
 
     m_protocolGame->sendImbuementDurations(isOpen);
-}
-
-void Game::openWheelOfDestiny(uint32_t playerId)
-{
-    if (!playerId || !canPerformGameAction())
-        return;
-
-    m_protocolGame->sendOpenWheelOfDestiny(playerId);
-}
-
-void Game::applyWheelOfDestiny(const std::vector<uint16_t>& wheelPointsVec, const std::vector<uint16_t>& activeGemsVec)
-{
-    if (!canPerformGameAction())
-        return;
-
-    m_protocolGame->sendApplyWheelOfDestiny(wheelPointsVec, activeGemsVec);
 }
 
 void Game::stashWithdraw(const uint16_t itemId, const uint32_t count, const uint8_t stackpos)
@@ -2166,4 +2325,20 @@ void Game::sendApplyWheelPoints(const std::vector<uint16_t>& slotPoints,uint16_t
     if (!canPerformGameAction())
         return;
     m_protocolGame->sendApplyWheelPoints(slotPoints, greenGem, redGem, acquaGem, purpleGem);
+}
+
+void Game::sendWeaponProficiencyAction(const uint8_t actionType, const uint16_t itemId)
+{
+    if (!canPerformGameAction())
+        return;
+
+    m_protocolGame->sendWeaponProficiencyAction(actionType, itemId);
+}
+
+void Game::sendWeaponProficiencyApply(const uint16_t itemId, const std::vector<uint8_t>& levels, const std::vector<uint8_t>& perkPositions)
+{
+    if (!canPerformGameAction())
+        return;
+
+    m_protocolGame->sendWeaponProficiencyApply(itemId, levels, perkPositions);
 }

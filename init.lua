@@ -8,6 +8,17 @@ Services = {
     --websites = "http://localhost/?subtopic=accountmanagement", --./client_entergame "Forgot password and/or email"
     --createAccount = "http://localhost/clientcreateaccount.php", --./client_entergame -- createAccount.lua
     --getCoinsUrl = "http://localhost/?subtopic=shop&step=terms", --./game_market
+    clientAssets = {
+        enabled = true,
+        repository = "dudantas/tibia-client",
+        installSounds = true,
+        strictManifestSha256 = true,
+        allowRawFallbackHashMismatch = false,
+        preferArchive = true,
+        installArchiveExtras = true,
+        archiveExtraPrefixes = { "bin" },
+        installPackagedFiles = true
+    }, -- ./client_assets
 }
 
 --- Enables or disables the entire server configuration block.
@@ -51,7 +62,7 @@ if ENABLE_SERVERS then
     Servers_init = {
         ["http://100.119.218.56/myaac/login.php"] = {
             port = 80,
-            protocol = 1500,
+            protocol = 1511,
             httpLogin = true,
             useAuthenticator = false
         }
@@ -68,8 +79,7 @@ end
 
 -- setup logger
 g_logger.setLogFile(g_resources.getWorkDir() .. g_app.getCompactName() .. '.log')
-g_logger.info(os.date('== application started at %b %d %Y %X'))
-g_logger.info("== operating system: " .. g_platform.getOSName())
+g_logger.info("Operating system: " .. g_platform.getOSName())
 
 -- print first terminal message
 g_logger.info(g_app.getName() .. ' ' .. g_app.getVersion() .. ' rev ' .. g_app.getBuildRevision() .. ' (' ..

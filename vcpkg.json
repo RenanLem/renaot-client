@@ -8,8 +8,15 @@
     "cppcodec",
     "discord-rpc",
     "liblzma",
+    "libarchive",
     "libobfuscate",
     "libogg",
+    {
+      "name": "libpng",
+      "features": [
+        "apng"
+      ]
+    },
     "libvorbis",
     "nlohmann-json",
     "openal-soft",
@@ -22,8 +29,12 @@
     "zlib",
     "bshoshany-thread-pool",
     "fmt",
+    {
+      "name": "ixwebsocket",
+      "platform": "!wasm32"
+    },
+    "spdlog",
     "utfcpp",
-    "gtest",
     "freetype",
     {
       "name": "inih",
@@ -48,5 +59,13 @@
       "platform": "windows"
     }
   ],
-  "builtin-baseline": "56bb2411609227288b70117ead2c47585ba07713"
+  "features": {
+    "tests": {
+      "description": "Dependencies required to build unit tests.",
+      "dependencies": [
+        "gtest"
+      ]
+    }
+  },
+  "builtin-baseline": "f3e10653cc27d62a37a3763cd84b38bca07c6075"
 }

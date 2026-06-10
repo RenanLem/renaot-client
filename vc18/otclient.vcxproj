@@ -130,38 +130,43 @@
     <TargetName>$(ProjectName)_dx_x64</TargetName>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='OpenGL|Win32'">
-    <VcpkgHostTriplet>
-    </VcpkgHostTriplet>
-    <VcpkgTriplet>x86-windows-static</VcpkgTriplet>
+    <VcpkgHostTriplet>x64-windows</VcpkgHostTriplet>
+    <VcpkgTriplet>x86-windows-static-release</VcpkgTriplet>
     <VcpkgConfiguration>Release</VcpkgConfiguration>
-    <VcpkgInstalledDir>vcpkg_installed</VcpkgInstalledDir>
+    <VcpkgInstalledDir>$(MSBuildProjectDirectory)\..\vcpkg_installed\msbuild-win32-release</VcpkgInstalledDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DirectX|Win32'" Label="Vcpkg">
-    <VcpkgHostTriplet />
-    <VcpkgTriplet>x86-windows-static</VcpkgTriplet>
+    <VcpkgHostTriplet>x64-windows</VcpkgHostTriplet>
+    <VcpkgTriplet>x86-windows-static-release</VcpkgTriplet>
     <VcpkgConfiguration>Release</VcpkgConfiguration>
+    <VcpkgInstalledDir>$(MSBuildProjectDirectory)\..\vcpkg_installed\msbuild-win32-release</VcpkgInstalledDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='OpenGL|x64'" Label="Vcpkg">
-    <VcpkgHostTriplet />
-    <VcpkgTriplet>x64-windows-static</VcpkgTriplet>
+    <VcpkgHostTriplet>x64-windows</VcpkgHostTriplet>
+    <VcpkgTriplet>x64-windows-static-release</VcpkgTriplet>
     <VcpkgConfiguration>Release</VcpkgConfiguration>
+    <VcpkgInstalledDir>$(MSBuildProjectDirectory)\..\vcpkg_installed\msbuild-x64-release</VcpkgInstalledDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DirectX|x64'" Label="Vcpkg">
-    <VcpkgHostTriplet />
-    <VcpkgTriplet>x64-windows-static</VcpkgTriplet>
+    <VcpkgHostTriplet>x64-windows</VcpkgHostTriplet>
+    <VcpkgTriplet>x64-windows-static-release</VcpkgTriplet>
     <VcpkgConfiguration>Release</VcpkgConfiguration>
+    <VcpkgInstalledDir>$(MSBuildProjectDirectory)\..\vcpkg_installed\msbuild-x64-release</VcpkgInstalledDir>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
     <VcpkgAutoLink>true</VcpkgAutoLink>
-    <VcpkgInstalledDir>vcpkg_installed</VcpkgInstalledDir>
+    <VcpkgAdditionalInstallOptions>--overlay-triplets="$(MSBuildProjectDirectory)\..\cmake\triplets" --binarysource=clear --binarysource=files,$(VcpkgRoot)\binary-cache,readwrite</VcpkgAdditionalInstallOptions>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <VcpkgHostTriplet>x64-windows</VcpkgHostTriplet>
     <VcpkgTriplet>x86-windows-static</VcpkgTriplet>
-    <VcpkgInstalledDir>vcpkg_installed</VcpkgInstalledDir>
+    <VcpkgInstalledDir>$(MSBuildProjectDirectory)\..\vcpkg_installed\msbuild-win32-debug</VcpkgInstalledDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Vcpkg">
+    <VcpkgHostTriplet>x64-windows</VcpkgHostTriplet>
     <VcpkgTriplet>x64-windows-static</VcpkgTriplet>
+    <VcpkgInstalledDir>$(MSBuildProjectDirectory)\..\vcpkg_installed\msbuild-x64-debug</VcpkgInstalledDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -170,8 +175,8 @@
       <Optimization>Disabled</Optimization>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <AdditionalIncludeDirectories>
-        $(VcpkgInstalledDir)\include\luajit;
-		$(VcpkgInstalledDir)\include\;
+        $(VcpkgInstalledDir)\$(VcpkgTriplet)\include\luajit;
+		$(VcpkgInstalledDir)\$(VcpkgTriplet)\include\;
         generated;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
@@ -196,8 +201,8 @@
       <Optimization>Disabled</Optimization>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <AdditionalIncludeDirectories>
-        $(VcpkgInstalledDir)\include\luajit;
-        $(VcpkgInstalledDir)\include\;
+        $(VcpkgInstalledDir)\$(VcpkgTriplet)\include\luajit;
+        $(VcpkgInstalledDir)\$(VcpkgTriplet)\include\;
         generated;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
@@ -222,8 +227,8 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <AdditionalIncludeDirectories>
-        $(VcpkgInstalledDir)\include\luajit;
-        $(VcpkgInstalledDir)\include\;
+        $(VcpkgInstalledDir)\$(VcpkgTriplet)\include\luajit;
+        $(VcpkgInstalledDir)\$(VcpkgTriplet)\include\;
         generated;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
@@ -252,8 +257,8 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <AdditionalIncludeDirectories>
-        $(VcpkgInstalledDir)\include\luajit;
-        $(VcpkgInstalledDir)\include\;
+        $(VcpkgInstalledDir)\$(VcpkgTriplet)\include\luajit;
+        $(VcpkgInstalledDir)\$(VcpkgTriplet)\include\;
         generated;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
@@ -284,8 +289,8 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <AdditionalIncludeDirectories>
-        $(VcpkgInstalledDir)\include\luajit;
-        $(VcpkgInstalledDir)\include\;
+        $(VcpkgInstalledDir)\$(VcpkgTriplet)\include\luajit;
+        $(VcpkgInstalledDir)\$(VcpkgTriplet)\include\;
         generated;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
@@ -313,8 +318,8 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <AdditionalIncludeDirectories>
-        $(VcpkgInstalledDir)\include\luajit;
-        $(VcpkgInstalledDir)\include\;
+        $(VcpkgInstalledDir)\$(VcpkgTriplet)\include\luajit;
+        $(VcpkgInstalledDir)\$(VcpkgTriplet)\include\;
         generated;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
@@ -748,6 +753,6 @@
   </Target>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VcpkgRoot)\\scripts\\buildsystems\\msbuild\\vcpkg.targets" Condition="Exists('$(VcpkgRoot)\\scripts\\buildsystems\\msbuild\\vcpkg.targets')" />
+    <Import Project="$(VcpkgRoot)\scripts\buildsystems\msbuild\vcpkg.targets" Condition="'$(_ZVcpkgRoot)'=='' and '$(VcpkgRoot)'!='' and Exists('$(VcpkgRoot)\scripts\buildsystems\msbuild\vcpkg.targets')" />
   </ImportGroup>
 </Project>

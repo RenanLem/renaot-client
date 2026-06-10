@@ -55,6 +55,13 @@ else()
   add_executable(${PROJECT_NAME} "")
 endif()
 
+if(NOT OTCLIENT_BUILD_CLIENT)
+  set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL ON)
+  if(MSVC)
+    set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD ON)
+  endif()
+endif()
+
 # *****************************************************************************
 # Options Code
 # *****************************************************************************
@@ -147,12 +154,16 @@ if(DEFINED VCPKG_TARGET_TRIPLET)
   unset(ZLIB_LIBRARY_RELEASE CACHE)
 endif()
 find_package(ZLIB REQUIRED)
+find_package(PNG REQUIRED)
 find_package(phmap REQUIRED)
 find_package(absl CONFIG REQUIRED)
 if (TOGGLE_FRAMEWORK_PROTOBUF)
   find_package(Protobuf REQUIRED)
 endif()
 find_package(LibLZMA REQUIRED)
+if(NOT ANDROID)
+  find_package(LibArchive REQUIRED)
+endif()
 find_package(nlohmann_json REQUIRED)
 find_package(asio REQUIRED)
 find_package(Threads REQUIRED)
@@ -160,6 +171,10 @@ find_package(STDUUID CONFIG REQUIRED)
 find_package(pugixml CONFIG REQUIRED)
 find_package(httplib CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
+if(NOT WASM)
+  find_package(ixwebsocket CONFIG REQUIRED)
+endif()
+find_package(spdlog CONFIG REQUIRED)
 find_package(utf8cpp REQUIRED)
 if(DEFINED VCPKG_TARGET_TRIPLET)
   find_package(unofficial-inih CONFIG REQUIRED)
@@ -168,6 +183,34 @@ else()
   add_library(unofficial::inih::inireader ALIAS PkgConfig::INIReader)
 endif()
 find_package(Freetype REQUIRED)
+
+if (TARGET spdlog::spdlog)
+  set(OTCLIENT_SPDLOG_TARGET spdlog::spdlog)
+elseif (TARGET spdlog::spdlog_header_only)
+  set(OTCLIENT_SPDLOG_TARGET spdlog::spdlog_header_only)
+else()
+  message(FATAL_ERROR "spdlog target not found; expected spdlog::spdlog or spdlog::spdlog_header_only")
+endif()
+
+if (TARGET fmt::fmt)
+  set(OTCLIENT_FMT_TARGET fmt::fmt)
+elseif (TARGET fmt::fmt-header-only)
+  set(OTCLIENT_FMT_TARGET fmt::fmt-header-only)
+else()
+  message(FATAL_ERROR "fmt target not found; expected fmt::fmt or fmt::fmt-header-only")
+endif()
+
+if(NOT ANDROID)
+  add_definitions(-DFRAMEWORK_HAVE_LIBARCHIVE)
+  if(TARGET LibArchive::LibArchive)
+    set(LIBARCHIVE_LIBRARY LibArchive::LibArchive)
+  else()
+    include_directories(${LibArchive_INCLUDE_DIRS})
+    set(LIBARCHIVE_LIBRARY ${LibArchive_LIBRARIES})
+  endif()
+else()
+  set(LIBARCHIVE_LIBRARY "")
+endif()
 
 find_path(CPPCODEC_INCLUDE_DIRS "cppcodec/base32_crockford.hpp")
 
@@ -651,10 +694,14 @@ if(MSVC)
         set_property(TARGET ${msvc_target} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
       endif()
     endforeach()
-    set(VCPKG_TARGET_TRIPLET "x64-windows-static" CACHE STRING "")
+    if(NOT DEFINED VCPKG_TARGET_TRIPLET)
+      set(VCPKG_TARGET_TRIPLET "x64-windows-static" CACHE STRING "")
+    endif()
   else()
     log_option_disabled("STATIC_LIBRARY")
-    set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "")
+    if(NOT DEFINED VCPKG_TARGET_TRIPLET)
+      set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "")
+    endif()
     foreach(msvc_target IN ITEMS otclient_core ${PROJECT_NAME})
       if(TARGET ${msvc_target})
         set_property(TARGET ${msvc_target} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
@@ -682,6 +729,7 @@ if(MSVC)
           ${CMAKE_THREAD_LIBS_INIT}
           ${PHYSFS_LIBRARY}
           ZLIB::ZLIB
+          PNG::PNG
           ${NLOHMANN_JSON_LIBRARY}
           ${OPENGL_LIBRARIES}
           ${DirectX_LIBRARY}
@@ -699,9 +747,13 @@ if(MSVC)
           asio::asio
           OpenAL::OpenAL
           LibLZMA::LibLZMA
+          ${LIBARCHIVE_LIBRARY}
           winmm.lib
+          bcrypt.lib
           pugixml::pugixml
-          fmt::fmt
+          ixwebsocket::ixwebsocket
+          ${OTCLIENT_FMT_TARGET}
+          ${OTCLIENT_SPDLOG_TARGET}
           utf8cpp::utf8cpp
           Freetype::Freetype
   )
@@ -735,6 +787,7 @@ elseif(ANDROID)
           ${LUAJIT_LIBRARY}
           ${PHYSFS_LIBRARY}
           ZLIB::ZLIB
+          PNG::PNG
           ${NLOHMANN_JSON_LIBRARY}
           ${EGL_LIBRARY}
           ${OGG_LIBRARY}
@@ -752,13 +805,16 @@ elseif(ANDROID)
           Vorbis::vorbis
           Vorbis::vorbisfile
           LibLZMA::LibLZMA
+          ${LIBARCHIVE_LIBRARY}
           game-activity::game-activity
           GLESv3
           android
           log
           Freetype::Freetype
           pugixml::pugixml
-          fmt::fmt
+          ixwebsocket::ixwebsocket
+          ${OTCLIENT_FMT_TARGET}
+          ${OTCLIENT_SPDLOG_TARGET}
           utf8cpp::utf8cpp
   )
 
@@ -799,7 +855,7 @@ elseif(WASM)
           PUBLIC
           ${LUA_LIBRARY}
           ${PHYSFS_LIBRARY}
-
+          PNG::PNG
           ${NLOHMANN_JSON_LIBRARY}
           ${GLEW_LIBRARY}
           ${OPENGL_LIBRARIES}
@@ -821,12 +877,14 @@ elseif(WASM)
           asio::asio
           # OpenAL::OpenAL (using emscripten openal api)
           LibLZMA::LibLZMA
+          ${LIBARCHIVE_LIBRARY}
           pugixml::pugixml
           ZLIB::ZLIB
           OpenSSL::SSL
           OpenSSL::Crypto
           httplib::httplib
-          fmt::fmt
+          ${OTCLIENT_FMT_TARGET}
+          ${OTCLIENT_SPDLOG_TARGET}
           utf8cpp::utf8cpp
           Ogg::ogg
           Vorbis::vorbisfile
@@ -921,6 +979,7 @@ else() # Linux
           PUBLIC
           ${LUAJIT_LIBRARY}
           ${PHYSFS_LIBRARY}
+          PNG::PNG
           ${NLOHMANN_JSON_LIBRARY}
           ${GLEW_LIBRARY}
           ${OPENGL_LIBRARIES}
@@ -943,12 +1002,15 @@ else() # Linux
           asio::asio
           OpenAL::OpenAL
           LibLZMA::LibLZMA
+          ${LIBARCHIVE_LIBRARY}
           pugixml::pugixml
+          ixwebsocket::ixwebsocket
           ZLIB::ZLIB
           OpenSSL::SSL
           OpenSSL::Crypto
           httplib::httplib
-          fmt::fmt
+          ${OTCLIENT_FMT_TARGET}
+          ${OTCLIENT_SPDLOG_TARGET}
           utf8cpp::utf8cpp
           Ogg::ogg
           Vorbis::vorbisfile

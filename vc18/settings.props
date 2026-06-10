@@ -23,9 +23,11 @@
     <OTCLIENT_LIBDEPS>
         advapi32.lib;
         avrt.lib;
+        bcrypt.lib;
         crypt32.lib;
         dbghelp.lib;
         gdi32.lib;
+        ixwebsocket.lib;
         kernel32.lib;
         ole32.lib;
         opengl32.lib;
