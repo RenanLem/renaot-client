@@ -3,7 +3,7 @@ Module
   description: One-toggle auto-loot — opens nearby corpses after kills
   author: RenaOT
   sandboxed: true
-  autoload: true
+  autoload: false
   autoload-priority: 1500
   scripts: [ quickloot ]
   dependencies: [ game_interface ]

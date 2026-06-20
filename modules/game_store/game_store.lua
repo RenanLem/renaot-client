@@ -535,7 +535,8 @@ end
 -- =============================================*/
 
 function onStoreInit(url, coinsPacketSize)
-    if not GameStore.website.IMAGES_URL then
+    -- An empty URL from the server must not override the local images fallback
+    if not GameStore.website.IMAGES_URL and url and url ~= "" then
         GameStore.website.IMAGES_URL = url
     end
 end
