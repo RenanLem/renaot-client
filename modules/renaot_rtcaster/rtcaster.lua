@@ -80,6 +80,9 @@ local state = {
   manaTrain     = { enabled = false, spell = '', manaPct = 80 },
   autoHaste     = { enabled = false, pz = false, spell = 'utani hur' },
   exercise      = { enabled = false, itemId = '28552' },
+  manaShield    = { enabled = false, pz = false, spell = 'utamo vita' },
+  antiParalyze  = { enabled = false, spell = 'utani gran hur' },
+  autoSwap      = { enabled = false, amuletId = '0', ringId = '0' },
   changeGold    = false,
   autoEat       = false,
   autoReconnect = false,
@@ -101,6 +104,7 @@ local lastChangeGoldAt = 0
 local lastAutoEatAt    = 0
 local lastExerciseAt   = 0
 local lastPotionAt     = 0
+local lastSwapAt       = 0
 local boundKeys   = {}
 local isRefreshing = false
 local comboCursor  = 1
@@ -226,6 +230,9 @@ local function ensureDefaults()
   state.manaTrain     = state.manaTrain     or { enabled = false, spell = '', manaPct = 80 }
   state.autoHaste     = state.autoHaste     or { enabled = false, pz = false, spell = 'utani hur' }
   state.exercise      = state.exercise      or { enabled = false, itemId = '28552' }
+  state.manaShield    = state.manaShield    or { enabled = false, pz = false, spell = 'utamo vita' }
+  state.antiParalyze  = state.antiParalyze  or { enabled = false, spell = 'utani gran hur' }
+  state.autoSwap      = state.autoSwap      or { enabled = false, amuletId = '0', ringId = '0' }
   state.hotkeys       = state.hotkeys       or { shooter = nil, autoTarget = nil }
   state.stats         = state.stats         or { total = 0, perSpell = {}, perItem = {} }
 end
@@ -246,6 +253,9 @@ local function saveConfig()
     manaTrain     = state.manaTrain,
     autoHaste     = state.autoHaste,
     exercise      = state.exercise,
+    manaShield    = state.manaShield,
+    antiParalyze  = state.antiParalyze,
+    autoSwap      = state.autoSwap,
     changeGold    = state.changeGold,
     autoEat       = state.autoEat,
     autoReconnect = state.autoReconnect,
@@ -270,6 +280,9 @@ local function loadConfig()
     state.manaTrain     = data.manaTrain     or nil
     state.autoHaste     = data.autoHaste     or nil
     state.exercise      = data.exercise      or nil
+    state.manaShield    = data.manaShield    or nil
+    state.antiParalyze  = data.antiParalyze  or nil
+    state.autoSwap      = data.autoSwap      or nil
     state.changeGold    = data.changeGold    and true or false
     state.autoEat       = data.autoEat       and true or false
     state.autoReconnect = data.autoReconnect and true or false
@@ -560,6 +573,48 @@ local function tryAutoHaste(player, now)
   return tryCastSpell(h.spell, now)
 end
 
+-- O buff de mana shield aparece em bits diferentes conforme client/spell; cheque os dois.
+local function hasManaShield(player)
+  return player:hasState(PlayerStates.ManaShield)
+      or player:hasState(PlayerStates.NewManaShield)
+end
+
+local function tryManaShield(player, now)
+  local m = state.manaShield
+  if not m or not m.enabled then return false end
+  if not m.spell or m.spell == '' then return false end
+  if hasManaShield(player) then return false end
+  if isInPz(player) and not m.pz then return false end
+  return tryCastSpell(m.spell, now)
+end
+
+local function tryAntiParalyze(player, now)
+  local a = state.antiParalyze
+  if not a or not a.enabled then return false end
+  if not a.spell or a.spell == '' then return false end
+  if not player:hasState(PlayerStates.Paralyze) then return false end
+  return tryCastSpell(a.spell, now)
+end
+
+-- Re-equipa anel/amuleto quando o slot esvazia (ex: SSA acaba). equipItemId perde
+-- packets se chamado em rajada, entao um swap por vez com cooldown >=300ms (ver memoria).
+local function tryAutoSwap(player, now)
+  local s = state.autoSwap
+  if not s or not s.enabled then return false end
+  if (now - lastSwapAt) < 300 then return false end
+  local function ensureSlot(slot, rawId)
+    local id = tonumber(rawId) or 0
+    if id <= 0 then return false end
+    if player:getInventoryItem(slot) then return false end  -- slot ocupado: nao mexe
+    g_game.equipItemId(id)
+    lastSwapAt = now
+    return true
+  end
+  if ensureSlot(InventorySlotNeck, s.amuletId) then return true end
+  if ensureSlot(InventorySlotFinger, s.ringId) then return true end
+  return false
+end
+
 local function tryManaTrain(player, now, manaPct)
   local m = state.manaTrain
   if not m.enabled then return false end
@@ -658,7 +713,10 @@ local function anyFeatureActive()
      or state.autoEat or state.changeGold
      or (state.manaTrain    and state.manaTrain.enabled)
      or (state.autoHaste    and state.autoHaste.enabled)
-     or (state.exercise     and state.exercise.enabled) then
+     or (state.exercise     and state.exercise.enabled)
+     or (state.manaShield   and state.manaShield.enabled)
+     or (state.antiParalyze and state.antiParalyze.enabled)
+     or (state.autoSwap     and state.autoSwap.enabled) then
     return true
   end
   return false
@@ -680,6 +738,10 @@ local function tick()
   -- Healing has the highest priority (don't die while bot-combat'ing)
   if tickHealing(player, now, hpPct, manaPct) then return end
 
+  -- Survival casts (alta prioridade: escapar de paralyze / manter mana shield)
+  if tryAntiParalyze(player, now)           then return end
+  if tryManaShield(player, now)             then return end
+
   -- Buff / utility casts before damage rotation
   if tryAutoUtito(player, now, manaCur)    then return end
   if tryAutoHaste(player, now)              then return end
@@ -691,6 +753,7 @@ local function tick()
   tryAutoEat(player, now)
   tryChangeGold(player, now)
   tryExercise(player, now)
+  tryAutoSwap(player, now)
 
   -- Lowest priority — only trains mana if nothing else needed the slot
   tryManaTrain(player, now, manaPct)
@@ -744,6 +807,9 @@ local function setToolFlag(name, v)
   elseif name == 'autoHaste' then state.autoHaste.enabled    = v and true or false
   elseif name == 'autoHastePz' then state.autoHaste.pz       = v and true or false
   elseif name == 'exercise' then state.exercise.enabled     = v and true or false
+  elseif name == 'manaShield' then state.manaShield.enabled  = v and true or false
+  elseif name == 'antiParalyze' then state.antiParalyze.enabled = v and true or false
+  elseif name == 'autoSwap'  then state.autoSwap.enabled     = v and true or false
   elseif name == 'changeGold'    then state.changeGold      = v and true or false
   elseif name == 'autoEat'       then state.autoEat         = v and true or false
   elseif name == 'autoReconnect' then state.autoReconnect   = v and true or false
@@ -1080,6 +1146,25 @@ local function attachToolsHandlers()
   local exi = window:recursiveGetChildById('exerciseItemId')
   exi.onTextChange = function(_, t) if not isRefreshing then state.exercise.itemId = t or ''; saveConfig() end end
 
+  local ms = window:recursiveGetChildById('manaShieldEnable')
+  if ms then ms.onCheckChange = function(_, c) if not isRefreshing then setToolFlag('manaShield', c) end end end
+  local msp = window:recursiveGetChildById('manaShieldSpell')
+  if msp then msp.onTextChange = function(_, t) if not isRefreshing then state.manaShield.spell = t or ''; saveConfig() end end end
+  local mspz = window:recursiveGetChildById('manaShieldPz')
+  if mspz then mspz.onCheckChange = function(_, c) if not isRefreshing then state.manaShield.pz = c and true or false; saveConfig() end end end
+
+  local ap = window:recursiveGetChildById('antiParalyzeEnable')
+  if ap then ap.onCheckChange = function(_, c) if not isRefreshing then setToolFlag('antiParalyze', c) end end end
+  local aps = window:recursiveGetChildById('antiParalyzeSpell')
+  if aps then aps.onTextChange = function(_, t) if not isRefreshing then state.antiParalyze.spell = t or ''; saveConfig() end end end
+
+  local sw = window:recursiveGetChildById('autoSwapEnable')
+  if sw then sw.onCheckChange = function(_, c) if not isRefreshing then setToolFlag('autoSwap', c) end end end
+  local swa = window:recursiveGetChildById('autoSwapAmulet')
+  if swa then swa.onTextChange = function(_, t) if not isRefreshing then state.autoSwap.amuletId = t or '0'; saveConfig() end end end
+  local swr = window:recursiveGetChildById('autoSwapRing')
+  if swr then swr.onTextChange = function(_, t) if not isRefreshing then state.autoSwap.ringId = t or '0'; saveConfig() end end end
+
   window:recursiveGetChildById('changeGoldEnable').onCheckChange     = function(_, c) if not isRefreshing then setToolFlag('changeGold', c) end end
   window:recursiveGetChildById('autoEatEnable').onCheckChange        = function(_, c) if not isRefreshing then setToolFlag('autoEat', c) end end
   window:recursiveGetChildById('autoReconnectEnable').onCheckChange  = function(_, c) if not isRefreshing then setToolFlag('autoReconnect', c) end end
@@ -1099,6 +1184,16 @@ refreshToolsFields = function()
 
   window:recursiveGetChildById('exerciseEnable'):setChecked(state.exercise.enabled)
   window:recursiveGetChildById('exerciseItemId'):setText(state.exercise.itemId or '')
+
+  local function setIf(id, fn) local w = window:recursiveGetChildById(id); if w then fn(w) end end
+  setIf('manaShieldEnable',  function(w) w:setChecked(state.manaShield.enabled) end)
+  setIf('manaShieldPz',      function(w) w:setChecked(state.manaShield.pz) end)
+  setIf('manaShieldSpell',   function(w) w:setText(state.manaShield.spell or '') end)
+  setIf('antiParalyzeEnable',function(w) w:setChecked(state.antiParalyze.enabled) end)
+  setIf('antiParalyzeSpell', function(w) w:setText(state.antiParalyze.spell or '') end)
+  setIf('autoSwapEnable',    function(w) w:setChecked(state.autoSwap.enabled) end)
+  setIf('autoSwapAmulet',    function(w) w:setText(tostring(state.autoSwap.amuletId or '0')) end)
+  setIf('autoSwapRing',      function(w) w:setText(tostring(state.autoSwap.ringId or '0')) end)
 
   window:recursiveGetChildById('changeGoldEnable'):setChecked(state.changeGold)
   window:recursiveGetChildById('autoEatEnable'):setChecked(state.autoEat)

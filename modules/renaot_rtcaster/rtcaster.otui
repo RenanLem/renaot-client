@@ -505,6 +505,95 @@ RTCasterWindow < MainWindow
       anchors.left: parent.left
       width: 130
 
+    Label
+      id: survivalLabel
+      text: Survival
+      anchors.top: autoReconnectEnable.bottom
+      margin-top: 12
+      anchors.left: parent.left
+      width: 200
+      color: #80c0ff
+
+    CheckBox
+      id: manaShieldEnable
+      !text: tr('Mana Shield')
+      anchors.top: survivalLabel.bottom
+      margin-top: 2
+      anchors.left: parent.left
+      width: 110
+
+    CheckBox
+      id: manaShieldPz
+      !text: tr('PZ')
+      anchors.verticalCenter: manaShieldEnable.verticalCenter
+      anchors.left: manaShieldEnable.right
+      margin-left: 4
+      width: 44
+
+    TextEdit
+      id: manaShieldSpell
+      width: 120
+      height: 22
+      anchors.verticalCenter: manaShieldEnable.verticalCenter
+      anchors.left: manaShieldPz.right
+      margin-left: 6
+
+    CheckBox
+      id: antiParalyzeEnable
+      !text: tr('Anti-Paralyze')
+      anchors.top: manaShieldEnable.bottom
+      margin-top: 6
+      anchors.left: parent.left
+      width: 110
+
+    TextEdit
+      id: antiParalyzeSpell
+      width: 120
+      height: 22
+      anchors.verticalCenter: antiParalyzeEnable.verticalCenter
+      anchors.left: antiParalyzeEnable.right
+      margin-left: 6
+
+    CheckBox
+      id: autoSwapEnable
+      !text: tr('Ring/Amu Swap')
+      anchors.top: antiParalyzeEnable.bottom
+      margin-top: 6
+      anchors.left: parent.left
+      width: 130
+
+    Label
+      id: autoSwapAmuletLabel
+      text: Amu
+      anchors.verticalCenter: autoSwapEnable.verticalCenter
+      anchors.left: autoSwapEnable.right
+      margin-left: 4
+      width: 28
+
+    TextEdit
+      id: autoSwapAmulet
+      width: 60
+      height: 22
+      anchors.verticalCenter: autoSwapEnable.verticalCenter
+      anchors.left: autoSwapAmuletLabel.right
+      margin-left: 2
+
+    Label
+      id: autoSwapRingLabel
+      text: Ring
+      anchors.verticalCenter: autoSwapEnable.verticalCenter
+      anchors.left: autoSwapAmulet.right
+      margin-left: 6
+      width: 28
+
+    TextEdit
+      id: autoSwapRing
+      width: 60
+      height: 22
+      anchors.verticalCenter: autoSwapEnable.verticalCenter
+      anchors.left: autoSwapRingLabel.right
+      margin-left: 2
+
   Panel
     id: panelShooter
     anchors.top: tabSep.bottom
