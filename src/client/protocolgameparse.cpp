@@ -4336,7 +4336,7 @@ ItemPtr ProtocolGame::getItem(const InputMessagePtr& msg, int id)
                     msg->getU32(); // loot category flags
                     break;
                 case 2: // Content Counter
-                    msg->getU32(); // ammo total
+                    item->setQuiverAmmoCount(msg->getU32()); // ammo total
                     break;
                 case 3: // Manager Unknown
                     msg->getU32(); // loot flags
@@ -4364,7 +4364,7 @@ ItemPtr ProtocolGame::getItem(const InputMessagePtr& msg, int id)
                     break;
                 case 11: // Quiver Loot
                     msg->getU32(); // loot flags
-                    msg->getU32(); // ammo total
+                    item->setQuiverAmmoCount(msg->getU32()); // ammo total
                     if (g_game.getClientVersion() >= 1332) {
                         msg->getU32(); // obtain flags
                     }
@@ -4383,7 +4383,7 @@ ItemPtr ProtocolGame::getItem(const InputMessagePtr& msg, int id)
             if (g_game.getFeature(Otc::GameThingQuiver)) {
                 const uint8_t hasQuiverAmmoCount = msg->getU8();
                 if (hasQuiverAmmoCount) {
-                    msg->getU32(); // ammo total
+                    item->setQuiverAmmoCount(msg->getU32()); // ammo total
                 }
             }
         }

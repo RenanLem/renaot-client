@@ -1,0 +1,60 @@
+[GF] C++EVENT slot=1 item=39149
+[GF] inv event slot=1 item=39149
+[GF] inv event slot=1 item=39149
+[GF] C++EVENT slot=3 item=2854
+[GF] inv event slot=3 item=2854
+[GF] inv event slot=3 item=2854
+[GF] C++EVENT slot=4 item=34094
+[GF] inv event slot=4 item=34094
+[GF] inv event slot=4 item=34094
+[GF] C++EVENT slot=5 item=39150
+[GF] inv event slot=5 item=39150
+[GF] inv event slot=5 item=39150
+[GF] C++EVENT slot=6 item=43878
+[GF] inv event slot=6 item=43878
+[GF] inv event slot=6 item=43878
+[GF] C++EVENT slot=7 item=43881
+[GF] inv event slot=7 item=43881
+[GF] inv event slot=7 item=43881
+[GF] C++EVENT slot=8 item=34098
+[GF] inv event slot=8 item=34098
+[GF] inv event slot=8 item=34098
+[GF] C++EVENT slot=11 item=23396
+[GF] inv event slot=11 item=23396
+[GF] inv event slot=11 item=23396
+[GF] onGameStart BEGIN
+[GF] inv event slot=nil item=nil
+[GF] onGameStart: registerEvents OK
+[GF] inv event slot=1 item=39149
+[GF] inv event slot=2 item=nil
+[GF] inv event slot=3 item=2854
+[GF] inv event slot=4 item=34094
+[GF] inv event slot=5 item=39150
+[GF] inv event slot=6 item=43878
+[GF] inv event slot=7 item=43881
+[GF] inv event slot=8 item=34098
+[GF] inv event slot=9 item=nil
+[GF] inv event slot=10 item=nil
+[GF] inv event slot=11 item=23396
+[GF] inv event slot=1 item=39149
+[GF] inv event slot=2 item=nil
+[GF] inv event slot=3 item=2854
+[GF] inv event slot=4 item=34094
+[GF] inv event slot=5 item=39150
+[GF] inv event slot=6 item=43878
+[GF] inv event slot=7 item=43881
+[GF] inv event slot=8 item=34098
+[GF] inv event slot=9 item=nil
+[GF] inv event slot=10 item=nil
+[GF] inv event slot=11 item=23396
+[GF] onGameStart END
+[GF] C++EVENT slot=7 item=nil
+[GF] inv event slot=7 item=nil
+[GF] inv event slot=7 item=nil
+[GF] inv event slot=7 item=nil
+[GF] inv event slot=7 item=nil
+[GF] C++EVENT slot=7 item=43881
+[GF] inv event slot=7 item=43881
+[GF] inv event slot=7 item=43881
+[GF] inv event slot=7 item=43881
+[GF] inv event slot=7 item=43881

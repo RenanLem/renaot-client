@@ -2197,6 +2197,9 @@ function Item:getSubType() end
 ---@return integer
 function Item:getCountOrSubType() end
 
+---@return integer
+function Item:getQuiverAmmoCount() end
+
 ---@return number
 function Item:getId() end
 

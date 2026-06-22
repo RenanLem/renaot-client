@@ -2,6 +2,18 @@ containerSettings = nil
 
 local CONTAINER_ITEMID_SETTINGS_KEY = 'ContainersByItemId'
 
+-- Mostra a quantidade de munição (flechas/virotes) numa quiver exibida dentro de um
+-- container (estilo RubinOT). O servidor envia o total via a categoria QuiverLoot
+-- sempre que o player segura a quiver; itens que não são quiver retornam 0 (não renderiza).
+-- DEVE ser chamado DEPOIS de itemWidget:setItem(), que reseta o displayCount para 0.
+-- Guard defensivo: getQuiverAmmoCount só existe em exe recompilado pós-merge — sem o
+-- guard, um exe defasado crasharia o render do container.
+local function applyQuiverAmmoCount(itemWidget, item)
+    if itemWidget and item and item.getQuiverAmmoCount then
+        itemWidget:setDisplayCount(item:getQuiverAmmoCount())
+    end
+end
+
 local function getContainerItemIdSettings()
     local char = g_game.getCharacterName()
     if not char or #char == 0 then
@@ -667,6 +679,7 @@ function sortContainerItems(container, sortMode)
                 ItemsDatabase.setTier(itemWidget, itemData.item)
                 itemWidget:setShowDuration(g_game.getFeature(GameThingClock) and modules.client_options.getOption('showExpiryInContainers'))
                 itemWidget:setShowCharges(g_game.getFeature(GameThingCounter) and modules.client_options.getOption('showExpiryInContainers'))
+                applyQuiverAmmoCount(itemWidget, itemData.item)
 
                 local itemName = "unnamed"
                 local success, result = pcall(function()
@@ -807,6 +820,7 @@ function refreshContainerItems(container)
         ItemsDatabase.setTier(itemWidget, container:getItem(slot))
         itemWidget:setShowDuration(g_game.getFeature(GameThingClock) and modules.client_options.getOption('showExpiryInContainers'))
         itemWidget:setShowCharges(g_game.getFeature(GameThingCounter) and modules.client_options.getOption('showExpiryInContainers'))
+        applyQuiverAmmoCount(itemWidget, container:getItem(slot))
     end
 
     if container:hasPages() then
@@ -1109,6 +1123,7 @@ function onContainerOpen(container, previousContainer)
         ItemsDatabase.setTier(itemWidget, container:getItem(slot))
         itemWidget:setShowDuration(g_game.getFeature(GameThingClock) and modules.client_options.getOption('showExpiryInContainers'))
         itemWidget:setShowCharges(g_game.getFeature(GameThingCounter) and modules.client_options.getOption('showExpiryInContainers'))
+        applyQuiverAmmoCount(itemWidget, container:getItem(slot))
         itemWidget:setMargin(0)
         itemWidget.position = container:getSlotPosition(slot)
 
@@ -1235,7 +1250,8 @@ function onContainerUpdateItem(container, slot, item, oldItem)
     itemWidget:setItem(item)
     itemWidget:setShowDuration(g_game.getFeature(GameThingClock) and modules.client_options.getOption('showExpiryInContainers'))
     itemWidget:setShowCharges(g_game.getFeature(GameThingCounter) and modules.client_options.getOption('showExpiryInContainers'))
-    
+    applyQuiverAmmoCount(itemWidget, item)
+
     -- Note: Removed automatic re-sorting to prevent interference with manual item movement
     -- Sorting should only happen when explicitly requested by the user
 end

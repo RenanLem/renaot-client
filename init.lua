@@ -62,10 +62,10 @@ if ENABLE_SERVERS then
     -- @table Servers_init
     --
     Servers_init = {
-        ["http://100.119.218.56/myaac/login.php"] = {
-            port = 80,
+        ["https://login.renaot.tech/login"] = {
+            port = 443,
             protocol = 1511,
-            httpLogin = true,
+            httpLogin = false,
             useAuthenticator = false
         }
     }
