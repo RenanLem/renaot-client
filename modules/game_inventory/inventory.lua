@@ -2,7 +2,7 @@ local iconTopMenu = nil
 
 local inventoryShrink = false
 
-local pvpModeRadioGroup = nil 
+local pvpModeRadioGroup = nil
 local monkMirrorItem = nil
 
 local function getInventoryUi()
@@ -28,7 +28,9 @@ local getSlotPanelBySlot = {
 
 local function isPlayerMonk()
     local player = g_game.getLocalPlayer()
-    if not player then
+    -- player.isMonk pode não existir em exe defasado (vocação Monk é binding novo do merge);
+    -- sem o guard, chamar player:isMonk() crasha inventoryEvent/onGameStart e mata os eventos.
+    if not player or not player.isMonk then
         return false
     end
     return player:isMonk()
@@ -143,18 +145,37 @@ local function inventoryEvent(player, slot, item, oldItem)
     slotPanel.item:setWidth(34)
     slotPanel.item:setHeight(34)
     
-    slotPanel.item:setShowDuration(g_game.getFeature(GameThingClock) and modules.client_options.getOption('showExpiryInInvetory'))
-    slotPanel.item:setShowCharges(g_game.getFeature(GameThingCounter) and modules.client_options.getOption('showExpiryInInvetory'))
-    ItemsDatabase.setTier(slotPanel.item, item)
-
-    if slot == InventorySlotLeft then
-        if item and modules.game_proficiency then
-            g_game.sendWeaponProficiencyAction(WeaponProficiency.WEAPON_PROFICIENCY_ITEM_INFO, item:getId())
-            modules.game_proficiency.updateTopBarProficiency()
+    -- Tudo abaixo é cosmético/feature e pode chamar binding que FALTA (exe velho) OU que CRASHA
+    -- por dentro (exe novo): getQuiverAmmoCount / sendWeaponProficiencyAction / updateTopBarProficiency
+    -- / isMonk. pcall pra o inventoryEvent NUNCA crashar — senão o onGameStart crasha e o
+    -- onInventoryChange não conecta -> slot vira "fantasma" ao vivo (só atualiza no relog). O setItem
+    -- acima já atualizou o slot FORA do pcall, então o slot fica sempre correto, dê o que der aqui.
+    local ok, err = pcall(function()
+        slotPanel.item:setShowDuration(g_game.getFeature(GameThingClock) and modules.client_options.getOption('showExpiryInInvetory'))
+        slotPanel.item:setShowCharges(g_game.getFeature(GameThingCounter) and modules.client_options.getOption('showExpiryInInvetory'))
+        ItemsDatabase.setTier(slotPanel.item, item)
+        if item and item.getQuiverAmmoCount then
+            slotPanel.item:setDisplayCount(item:getQuiverAmmoCount())
         end
-        updateMonkMirrorItem(item)
+        if slot == InventorySlotLeft then
+            if item and modules.game_proficiency and g_game.sendWeaponProficiencyAction then
+                g_game.sendWeaponProficiencyAction(WeaponProficiency.WEAPON_PROFICIENCY_ITEM_INFO, item:getId())
+                modules.game_proficiency.updateTopBarProficiency()
+            end
+            updateMonkMirrorItem(item)
+        end
+    end)
+    if not ok then
+        g_logger.error('[inventory] inventoryEvent tail falhou (slot ok mesmo assim): ' .. tostring(err))
     end
 end
+
+-- IMPORTANTE: conecta o inventoryEvent ao onInventoryChange do LocalPlayer no ESCOPO DO MÓDULO (no
+-- load), NÃO dentro do onGameStart. No client full-merge, o registerEvents do Controller (conectado
+-- tarde, em onGameStart) NÃO entregava o onInventoryChange ao vivo — o slot de equip só atualizava
+-- no relog (item "fantasma"). Conectar cedo, no módulo, entrega de forma confiável; e é uma única
+-- conexão por vida do client (não acumula a cada relog como um connect dentro do onGameStart faria).
+connect(LocalPlayer, { onInventoryChange = inventoryEvent })
 
 local function onSoulChange(localPlayer, soul)
     local ui = getInventoryUi()
@@ -298,8 +319,8 @@ function inventoryController:onGameStart()
             end
         end
     end
+    -- onInventoryChange é conectado no escopo do módulo (acima), NÃO aqui — ver comentário lá.
     inventoryController:registerEvents(LocalPlayer, {
-        onInventoryChange = inventoryEvent,
         onSoulChange = onSoulChange,
         onFreeCapacityChange = onFreeCapacityChange
     }):execute()

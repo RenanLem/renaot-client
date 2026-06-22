@@ -79,7 +79,14 @@ local function onGameStart(self)
     if self.__onGameStart ~= nil then
         self.currentTypeEvent = TypeEvent.GAME_INIT
         addEvent(function()
-            self:__onGameStart()
+            -- pcall: se o onGameStart do módulo crashar (ex.: chama binding C++ que falta
+            -- num exe defasado), os eventos AINDA precisam conectar. Sem isso, o crash pula o
+            -- event:connect() e os eventos do módulo (onInventoryChange etc.) nunca disparam ao
+            -- vivo — sintoma clássico: "slot de equip fantasma, só atualiza no relog".
+            local ok, err = pcall(self.__onGameStart, self)
+            if not ok then
+                g_logger.error('Controller __onGameStart error (eventos conectados mesmo assim): ' .. tostring(err))
+            end
 
             local eventList = self.events[TypeEvent.GAME_INIT]
             if eventList ~= nil then
