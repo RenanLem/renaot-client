@@ -1,9 +1,23 @@
 -- this is the first file executed when the application starts
 -- we have to load the first modules form here
 
+-- ============================================================
+-- RenaOT Auto-Updater (estilo RubinOT)
+-- Com ENABLE_UPDATER = true, o client checa updates no boot,
+-- baixa só o que mudou (inclusive o próprio .exe) e reinicia sozinho.
+-- Requer o endpoint updater.php publicado em UPDATER_URL.
+-- Mantenha false enquanto a infra (updates.renaot.tech) não estiver no ar.
+-- ============================================================
+local ENABLE_UPDATER = true
+local UPDATER_URL = "https://updates.renaot.tech/api/updater.php"
+
+-- RenaOT é desktop single-server: sem seleção de servidor customizado pelo client.
+-- (lido como global pelo módulo updater; sem isto ficaria nil = código morto silencioso)
+ALLOW_CUSTOM_SERVERS = false
+
 -- updater
 Services = {
-    --updater = "http://localhost/api/updater.php", --./updater
+    updater = ENABLE_UPDATER and UPDATER_URL or "",
     --status = "http://localhost/login.php", --./client_entergame | ./client_topmenu
     --websites = "http://localhost/?subtopic=accountmanagement", --./client_entergame "Forgot password and/or email"
     --createAccount = "http://localhost/clientcreateaccount.php", --./client_entergame -- createAccount.lua
@@ -154,6 +168,17 @@ local function loadModules()
 
     -- uncomment the line below so that modules are reloaded when modified. (Note: Use only mod dev)
     -- g_modules.enableAutoReload()
+end
+
+-- override local opcional do endpoint do updater (apenas DEV/teste):
+-- se existir o arquivo 'updater.local' na raiz do client, usa a URL contida nele.
+-- Em producao esse arquivo nao existe, entao usa UPDATER_URL (updates.renaot.tech).
+if Services.updater and Services.updater ~= "" and g_resources.fileExists('/updater.local') then
+    local u = g_resources.readFileContents('/updater.local'):gsub('%s+', '')
+    if u ~= '' then
+        Services.updater = u
+        g_logger.info('Updater: usando endpoint local de teste: ' .. u)
+    end
 end
 
 -- run updater, must use data.zip

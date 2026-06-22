@@ -82,22 +82,17 @@ local function updateFiles(data, keepCurrentFiles)
   end
 
   local newFiles = false
-  local finalFiles = {}
-  local localFiles = g_resources.filesChecksums()
 
   local toUpdate = {}
   local toUpdateFiles = {}
-  -- keep all files or files from data/things
-  for file, checksum in pairs(localFiles) do
-    if keepCurrentFiles or string.find(file, "data/things") then
-      table.insert(finalFiles, file)
-    end
-  end
 
-  -- update files
+  -- RenaOT: comparar checksum SOMENTE dos arquivos do manifesto (rapido).
+  -- O g_resources.filesChecksums() original varria TODA a arvore montada
+  -- (incl. ~15k sprites de data/things, geridos pelo client_assets) -> ~90s de
+  -- scan no boot. g_resources.fileChecksum() devolve o CRC32 (mesmo formato:
+  -- g_crypt.crc32(buf,false)) de UM arquivo, ou "" se ausente.
   for file, checksum in pairs(data.files) do
-    table.insert(finalFiles, file)
-    if not localFiles[file] or localFiles[file] ~= checksum then
+    if g_resources.fileChecksum(file) ~= checksum then
       table.insert(toUpdate, { file, checksum })
       table.insert(toUpdateFiles, file)
       newFiles = true
@@ -140,7 +135,6 @@ local function updateFiles(data, keepCurrentFiles)
   updaterWindow.downloadProgress:setPercent(0)
   updaterWindow.downloadProgress:show()
   updaterWindow.downloadStatus:show()
-  updaterWindow.changeUrlButton:hide()
 
   downloadFiles(data["url"], toUpdate, 1, 0, function()
     updaterWindow.status:setText(tr("Updating client (may take few seconds)"))
@@ -150,7 +144,7 @@ local function updateFiles(data, keepCurrentFiles)
     scheduledEvent = scheduleEvent(function()
       local restart = binary or (not loadModulesFunction and reloadModules) or forceRestart
       if newFiles then
-        g_resources.updateFiles(toUpdateFiles, not restart)
+        g_resources.updateFiles(toUpdateFiles)
       end
 
       if binary then
@@ -209,7 +203,7 @@ function Updater.check(args)
     if value == 100 then
       return Updater.error(tr("Timeout"))
     end
-    if updateData and (value > 60 or (not g_platform.isMobile() or not ALLOW_CUSTOM_SERVERS or not loadModulesFunc)) then -- gives 3s to set custom updater for mobile version
+    if updateData and (value > 60 or (not g_platform.isMobile() or not ALLOW_CUSTOM_SERVERS or not loadModulesFunction)) then -- gives 3s to set custom updater for mobile version
       return updateFiles(updateData)
     end
     scheduledEvent = scheduleEvent(function() progressUpdater(value + 1) end, 100)
@@ -234,7 +228,8 @@ end
 function Updater.error(message)
   removeEvent(scheduledEvent)
   if not updaterWindow then return end
-  displayErrorBox(tr("Updater Error"), message).onOk = function()
-    Updater.abort()
-  end
+  -- RenaOT: nao bloquear o jogador. Se o updater falhar (servidor fora, rede,
+  -- resposta invalida), apenas registra e segue para o login com o client atual.
+  g_logger.error("Updater: " .. tostring(message) .. " -- seguindo sem atualizar")
+  Updater.abort()
 end
