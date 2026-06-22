@@ -155,13 +155,7 @@ local function inventoryEvent(player, slot, item, oldItem)
         slotPanel.item:setShowCharges(g_game.getFeature(GameThingCounter) and modules.client_options.getOption('showExpiryInInvetory'))
         ItemsDatabase.setTier(slotPanel.item, item)
         if item and item.getQuiverAmmoCount then
-            local qc = item:getQuiverAmmoCount()
-            if slot == InventorySlotRight then
-                g_logger.error(('[QUIVERDBG] right id=%s ammo=%s'):format(tostring(item:getId()), tostring(qc)))
-            end
-            slotPanel.item:setDisplayCount(qc)
-        elseif slot == InventorySlotRight and item then
-            g_logger.error('[QUIVERDBG] right slot mas getQuiverAmmoCount AUSENTE no exe; id=' .. tostring(item:getId()))
+            slotPanel.item:setDisplayCount(item:getQuiverAmmoCount())
         end
         if slot == InventorySlotLeft then
             if item and modules.game_proficiency and g_game.sendWeaponProficiencyAction then
